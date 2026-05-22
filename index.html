@@ -586,15 +586,16 @@ function getVisual(id, key, def) { return _localVisual[id]?.[key] ?? def; }
 function salvarDados() {
   try {
     localStorage.setItem('fc_arm_planilha_hash', planilhaHash);
-    // #10: config de rua/linha vai ao Firebase (veja abaixo), mas mantemos backup local
-    localStorage.setItem('fc_arm_config', JSON.stringify(ruaLinhaMap));
-    localStorage.setItem('fc_arm_tipos_rua', JSON.stringify(tiposRua));
+    if (Object.keys(ruaLinhaMap).length > 0) {
+      localStorage.setItem('fc_arm_config', JSON.stringify(ruaLinhaMap));
+      localStorage.setItem('fc_arm_tipos_rua', JSON.stringify(tiposRua));
+    }
   } catch(e) { console.warn(e); }
 
   const now = Date.now();
   _ultimoSaveAt = now;
-  fbSetStatus(true, true); // #10: mostra "Salvando..." antes do write
-  // #5: só inclui ruaLinhaMap no save se tiver dados (evita apagar config ao processar planilha nova)
+  fbSetStatus(true, true);
+
   const payload = {
     tarefasAtivas,
     tarefasFinalizadas,
@@ -604,7 +605,25 @@ function salvarDados() {
     updatedAt: now
   };
   if (Object.keys(ruaLinhaMap).length > 0) { payload.ruaLinhaMap = ruaLinhaMap; payload.tiposRua = tiposRua; }
-  db.ref('armazenagem').set(payload).then(() => fbSetStatus(true)).catch(() => fbSetStatus(false));
+
+  // Proteção: só sobrescreve o banco se temos dados reais OU se somos a origem da última gravação
+  const temDados = tarefasAtivas.length > 0 || tarefasFinalizadas.length > 0 ||
+                   taskIdCounter > 0 || finalizedAddressesSet.size > 0;
+  if (temDados) {
+    db.ref('armazenagem').set(payload).then(() => fbSetStatus(true)).catch(() => fbSetStatus(false));
+  } else {
+    // Estado vazio — verifica se banco tem dados antes de sobrescrever
+    db.ref('armazenagem/taskIdCounter').once('value').then(snap => {
+      const remoteCounter = snap.val() || 0;
+      if (remoteCounter === 0) {
+        db.ref('armazenagem').set(payload).then(() => fbSetStatus(true)).catch(() => fbSetStatus(false));
+      } else {
+        // Banco tem dados reais — não sobrescreve, recarrega do banco
+        fbSetStatus(true);
+        db.ref('armazenagem').once('value').then(s => { if(s.val()) aplicarSnapshot(s.val(), true); });
+      }
+    }).catch(() => fbSetStatus(true));
+  }
 }
 
 // #3: aplica snapshot só se veio de outro usuário (updatedAt > _ultimoSaveAt com margem)
