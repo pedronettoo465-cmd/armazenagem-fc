@@ -492,141 +492,122 @@ function atualizarFinalizedAddressesByRuaLinha() {
 // ================== SUPABASE SYNC ==================
 const _SB_URL = 'https://yufgjiyeanjqtcwejagq.supabase.co';
 const _SB_KEY = 'sb_publishable_hQ9bnMCC7bZZ7R03sFRNZA_TCXdksEh';
-const _SB_HEADERS = { 'Content-Type': 'application/json', 'apikey': _SB_KEY, 'Authorization': 'Bearer ' + _SB_KEY };
-const ROW_ID = 1; // linha única na tabela
+const _SB_HEADERS = {'Content-Type':'application/json','apikey':_SB_KEY,'Authorization':'Bearer '+_SB_KEY};
+const ROW_ID = 1;
 let _ultimoSaveAt = 0;
 let _pollingInterval = null;
 let _operadorNome = '';
-
-function sbSetStatus(online, saving = false) {
-  const dot = document.getElementById('fb-dot');
-  const lbl = document.getElementById('fb-label');
-  if (saving) { if(dot) dot.style.background='var(--amber)'; if(lbl) lbl.textContent='Salvando...'; return; }
-  if(dot) dot.style.background = online ? 'var(--fc-green)' : '#E30613';
-  if(lbl) lbl.textContent = online ? 'Sincronizado' : 'Sem conexão';
-}
-// Alias para compatibilidade com código existente
-function fbSetStatus(online, saving=false){ sbSetStatus(online,saving); }
-
 const MAX_FINALIZADAS = 200;
 const _localVisual = {};
-function setVisual(id,key,val){if(!_localVisual[id])_localVisual[id]={};_localVisual[id][key]=val;}
-function getVisual(id,key,def){return _localVisual[id]?.[key]??def;}
+function setVisual(id,k,v){if(!_localVisual[id])_localVisual[id]={};_localVisual[id][k]=v;}
+function getVisual(id,k,def){return _localVisual[id]?.[k]??def;}
 
-// Lê dados do Supabase
-async function sbLer() {
-  const r = await fetch(`${_SB_URL}/rest/v1/armazenagem?id=eq.${ROW_ID}&select=dados`, { headers: _SB_HEADERS });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  const rows = await r.json();
-  if (!rows || rows.length === 0) return null;
-  return JSON.parse(rows[0].dados);
+function sbSetStatus(online, saving) {
+  var dot=document.getElementById('fb-dot'), lbl=document.getElementById('fb-label');
+  if(saving){if(dot)dot.style.background='var(--amber)';if(lbl)lbl.textContent='Salvando...';return;}
+  if(dot)dot.style.background=online?'var(--fc-green)':'#E30613';
+  if(lbl)lbl.textContent=online?'Sincronizado':'Sem conexao';
+}
+function fbSetStatus(online,saving){sbSetStatus(online,saving);}
+
+function sbLer() {
+  return fetch(_SB_URL+'/rest/v1/armazenagem?id=eq.'+ROW_ID+'&select=dados',{headers:_SB_HEADERS})
+    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+    .then(function(rows){if(!rows||rows.length===0)return null;return JSON.parse(rows[0].dados);});
 }
 
-// Grava dados no Supabase (upsert)
-async function sbGravar(payload) {
-  const body = JSON.stringify({ id: ROW_ID, dados: JSON.stringify(payload) });
-  const r = await fetch(`${_SB_URL}/rest/v1/armazenagem`, {
-    method: 'POST',
-    headers: { ..._SB_HEADERS, 'Prefer': 'resolution=merge-duplicates' },
-    body
-  });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
+function sbGravar(payload) {
+  var body=JSON.stringify({id:ROW_ID,dados:JSON.stringify(payload)});
+  var hdrs=Object.assign({},_SB_HEADERS,{'Prefer':'resolution=merge-duplicates'});
+  return fetch(_SB_URL+'/rest/v1/armazenagem',{method:'POST',headers:hdrs,body:body})
+    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);});
 }
 
-// ================== AUTENTICAÇÃO (local) ==================
 function fazerLogin() {
-  const senha = document.getElementById('login-senha').value;
-  const nome  = document.getElementById('login-nome').value.trim();
-  const btn   = document.getElementById('login-btn');
-  const err   = document.getElementById('login-err');
-  err.style.display = 'none';
-  if (!senha) return;
-  if (!nome)  { err.textContent = 'Digite seu nome antes de entrar.'; err.style.display = 'block'; return; }
-  if (senha.trim() !== 'ferreiracosta@2026') { err.textContent = 'Senha incorreta. Tente novamente.'; err.style.display = 'block'; return; }
-  btn.disabled = true; btn.textContent = 'Entrando...';
-  _operadorNome = nome;
-  localStorage.setItem('fc_arm_operador', nome);
-  document.getElementById('login-overlay').style.display = 'none';
+  var senha=document.getElementById('login-senha').value;
+  var nome=document.getElementById('login-nome').value.trim();
+  var btn=document.getElementById('login-btn');
+  var err=document.getElementById('login-err');
+  err.style.display='none';
+  if(!senha)return;
+  if(!nome){err.textContent='Digite seu nome antes de entrar.';err.style.display='block';return;}
+  if(senha.trim()!=='ferreiracosta@2026'){err.textContent='Senha incorreta. Tente novamente.';err.style.display='block';return;}
+  btn.disabled=true;btn.textContent='Entrando...';
+  _operadorNome=nome;
+  localStorage.setItem('fc_arm_operador',nome);
+  document.getElementById('login-overlay').style.display='none';
   carregarDados();
 }
+
 function salvarDados() {
   try {
-    localStorage.setItem('fc_arm_planilha_hash', planilhaHash);
-    if (Object.keys(ruaLinhaMap).length > 0) {
-      localStorage.setItem('fc_arm_config', JSON.stringify(ruaLinhaMap));
-      localStorage.setItem('fc_arm_tipos_rua', JSON.stringify(tiposRua));
+    localStorage.setItem('fc_arm_planilha_hash',planilhaHash);
+    if(Object.keys(ruaLinhaMap).length>0){
+      localStorage.setItem('fc_arm_config',JSON.stringify(ruaLinhaMap));
+      localStorage.setItem('fc_arm_tipos_rua',JSON.stringify(tiposRua));
     }
-  } catch(e) { console.warn(e); }
-
-  const now = Date.now();
-  _ultimoSaveAt = now;
-  sbSetStatus(true, true);
-
-  const temDados = tarefasAtivas.length > 0 || tarefasFinalizadas.length > 0 ||
-                   taskIdCounter > 0 || finalizedAddressesSet.size > 0;
-  if (!temDados) { sbSetStatus(true); return; }
-
-  if (tarefasFinalizadas.length > MAX_FINALIZADAS)
-    tarefasFinalizadas = tarefasFinalizadas.slice(-MAX_FINALIZADAS);
-
-  const payload = { tarefasAtivas, tarefasFinalizadas, taskIdCounter, fornecedoresManuais,
-    finalizedAddressesSet: Array.from(finalizedAddressesSet), updatedAt: now };
-  if (Object.keys(ruaLinhaMap).length > 0) { payload.ruaLinhaMap = ruaLinhaMap; payload.tiposRua = tiposRua; }
-
-  sbGravar(payload).then(() => sbSetStatus(true)).catch(() => sbSetStatus(false));
+  } catch(e){console.warn(e);}
+  var now=Date.now();
+  _ultimoSaveAt=now;
+  sbSetStatus(true,true);
+  var temDados=tarefasAtivas.length>0||tarefasFinalizadas.length>0||taskIdCounter>0||finalizedAddressesSet.size>0;
+  if(!temDados){sbSetStatus(true);return;}
+  if(tarefasFinalizadas.length>MAX_FINALIZADAS)tarefasFinalizadas=tarefasFinalizadas.slice(-MAX_FINALIZADAS);
+  var payload={tarefasAtivas:tarefasAtivas,tarefasFinalizadas:tarefasFinalizadas,taskIdCounter:taskIdCounter,
+    fornecedoresManuais:fornecedoresManuais,finalizedAddressesSet:Array.from(finalizedAddressesSet),updatedAt:now};
+  if(Object.keys(ruaLinhaMap).length>0){payload.ruaLinhaMap=ruaLinhaMap;payload.tiposRua=tiposRua;}
+  sbGravar(payload).then(function(){sbSetStatus(true);}).catch(function(){sbSetStatus(false);});
 }
 
-function aplicarSnapshot(data, forcado = false) {
-  if (!data) return;
-  if (!forcado && data.updatedAt && data.updatedAt <= _ultimoSaveAt + 500) return;
-  const prev = { ativas: tarefasAtivas.length, finalizadas: tarefasFinalizadas.length };
-  tarefasAtivas      = (data.tarefasAtivas     || []).map(t=>{if(!t.reg.nivelMin)t.reg.nivelMin=2;if(!t.reg.nivelMax)t.reg.nivelMax=7;return t;});
-  tarefasFinalizadas = (data.tarefasFinalizadas || []).map(t=>{if(!t.reg.nivelMin)t.reg.nivelMin=2;if(!t.reg.nivelMax)t.reg.nivelMax=7;return t;});
-  taskIdCounter      = data.taskIdCounter || 0;
-  fornecedoresManuais= data.fornecedoresManuais || [];
-  finalizedAddressesSet = new Set(data.finalizedAddressesSet || []);
-  if (data.ruaLinhaMap) { ruaLinhaMap = data.ruaLinhaMap; localStorage.setItem('fc_arm_config', JSON.stringify(ruaLinhaMap)); }
-  if (data.tiposRua)    { tiposRua    = data.tiposRua;    localStorage.setItem('fc_arm_tipos_rua', JSON.stringify(tiposRua)); }
+function aplicarSnapshot(data, forcado) {
+  if(!data)return;
+  if(!forcado&&data.updatedAt&&data.updatedAt<=_ultimoSaveAt+500)return;
+  var prev={ativas:tarefasAtivas.length,finalizadas:tarefasFinalizadas.length};
+  tarefasAtivas=(data.tarefasAtivas||[]).map(function(t){if(!t.reg.nivelMin)t.reg.nivelMin=2;if(!t.reg.nivelMax)t.reg.nivelMax=7;return t;});
+  tarefasFinalizadas=(data.tarefasFinalizadas||[]).map(function(t){if(!t.reg.nivelMin)t.reg.nivelMin=2;if(!t.reg.nivelMax)t.reg.nivelMax=7;return t;});
+  taskIdCounter=data.taskIdCounter||0;
+  fornecedoresManuais=data.fornecedoresManuais||[];
+  finalizedAddressesSet=new Set(data.finalizedAddressesSet||[]);
+  if(data.ruaLinhaMap){ruaLinhaMap=data.ruaLinhaMap;localStorage.setItem('fc_arm_config',JSON.stringify(ruaLinhaMap));}
+  if(data.tiposRua){tiposRua=data.tiposRua;localStorage.setItem('fc_arm_tipos_rua',JSON.stringify(tiposRua));}
   atualizarReservedAddresses();
   atualizarFinalizedAddressesByRuaLinha();
   renderActiveTasks();
   renderCompletedTasks();
   atualizarListaFornecedores();
-  if (!forcado) {
-    const novas      = tarefasAtivas.length     - prev.ativas;
-    const finalizadas= tarefasFinalizadas.length - prev.finalizadas;
-    if (novas > 0)       showToast(`🔄 ${novas} nova(s) ordem(ns) criada(s) por outro usuário`);
-    else if (novas < 0)  showToast(`🔄 Atualização recebida de outro usuário`);
-    if (finalizadas > 0) showToast(`✅ ${finalizadas} ordem(ns) finalizada(s) por outro usuário`);
-    if (novas > 0 && 'Notification' in window && Notification.permission === 'granted')
-      new Notification('Armazenagem FC', { body: `Nova ordem criada por outro operador` });
+  if(!forcado){
+    var novas=tarefasAtivas.length-prev.ativas;
+    var fin=tarefasFinalizadas.length-prev.finalizadas;
+    if(novas>0)showToast('\uD83D\uDD04 '+novas+' nova(s) ordem(ns) criada(s) por outro usuario');
+    else if(novas<0)showToast('\uD83D\uDD04 Atualizacao recebida de outro usuario');
+    if(fin>0)showToast('\u2705 '+fin+' ordem(ns) finalizada(s) por outro usuario');
+    if(novas>0&&'Notification' in window&&Notification.permission==='granted')
+      new Notification('Armazenagem FC',{body:'Nova ordem criada por outro operador'});
   }
 }
 
 function iniciarPolling() {
-  if (_pollingInterval) return;
-  _pollingInterval = setInterval(async () => {
-    try {
-      const data = await sbLer();
-      if (data) { aplicarSnapshot(data, false); sbSetStatus(true); }
-    } catch(e) { sbSetStatus(false); }
-  }, 2000); // verifica a cada 2 segundos
+  if(_pollingInterval)return;
+  _pollingInterval=setInterval(function(){
+    sbLer().then(function(data){if(data){aplicarSnapshot(data,false);sbSetStatus(true);}})
+           .catch(function(){sbSetStatus(false);});
+  },2000);
 }
 
 function carregarDados() {
-  const savedHash  = localStorage.getItem('fc_arm_planilha_hash');
-  const savedTipos = localStorage.getItem('fc_arm_tipos_rua');
-  if (savedHash)  planilhaHash = savedHash;
-  if (savedTipos) tiposRua = JSON.parse(savedTipos);
+  var savedHash=localStorage.getItem('fc_arm_planilha_hash');
+  var savedTipos=localStorage.getItem('fc_arm_tipos_rua');
+  if(savedHash)planilhaHash=savedHash;
+  if(savedTipos)tiposRua=JSON.parse(savedTipos);
   renderTiposRua();
-  if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
-  sbLer().then(data => {
-    if (data) aplicarSnapshot(data, true);
+  if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();
+  sbLer().then(function(data){
+    if(data)aplicarSnapshot(data,true);
     iniciarPolling();
     sbSetStatus(true);
-  }).catch(() => {
+  }).catch(function(){
     sbSetStatus(false);
-    showToast('⚠️ Sem conexão com Supabase. Verifique a internet.');
+    showToast('\u26A0\uFE0F Sem conexao com Supabase. Verifique a internet.');
   });
 }
 
