@@ -549,6 +549,7 @@ function fazerLogin() {
   document.getElementById('login-overlay').style.display = 'none';
   carregarDados();
 }
+function salvarDados() {
   try {
     localStorage.setItem('fc_arm_planilha_hash', planilhaHash);
     if (Object.keys(ruaLinhaMap).length > 0) {
