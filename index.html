@@ -950,94 +950,62 @@ function criarNovaTarefa(prod, reg) {
   });
   if (!ruasValidas.length) { showToast(`Nenhuma rua configurada para a linha ${linhaDescricao}. Configure na aba Configuração.`); return; }
 
-  // #1: transação atômica — lê o estado atual do Firebase antes de alocar
-  showLoader(true);
-  db.ref('armazenagem').transaction(atual => {
-    if (!atual) return atual; // aborta se não há dados ainda
-    const ativasAtuais = (atual.tarefasAtivas || []).map(t => { if(!t.reg.nivelMin) t.reg.nivelMin=2; if(!t.reg.nivelMax) t.reg.nivelMax=7; return t; });
-    const finalizadasAtuais = atual.finalizedAddressesSet || [];
-    // Calcula reservas com base no estado REAL do Firebase (não local)
-    const reservedTx = new Set(ativasAtuais.flatMap(t => t.alocacao.flatMap(a => a.enderecos.map(e => e.key))));
-    const finalizedTx = new Set(finalizadasAtuais);
-    const grupos = coletarEnderecosPorPredioTx(ruasValidas, reg.nivelMin, reg.nivelMax, reservedTx, finalizedTx);
-    let restante = reg.paletes;
-    const alocacao = [];
-    for (let grupo of grupos) {
-      if (restante <= 0) break;
-      const pegar = Math.min(grupo.enderecos.length, restante);
-      alocacao.push({ rua: grupo.rua, enderecos: grupo.enderecos.slice(0, pegar), alocados: pegar, totalDisponivel: grupo.enderecos.length });
-      restante -= pegar;
-    }
-    const totalAlocados = reg.paletes - restante;
-    const taskId = (atual.taskIdCounter || 0);
-    const createdAt = Date.now();
-    const task = {
-      id: taskId,
-      prod: prodCopy,
-      reg: { via: reg.via, forn: reg.forn, mat: reg.mat, emp: reg.emp, paletes: reg.paletes, nivelMin: reg.nivelMin, nivelMax: reg.nivelMax },
-      alocacao, totalAlocados, faltam: restante, ruasValidas, createdAt,
-      createdBy: _operadorNome  // #6: rastreabilidade
-    };
-    atual.tarefasAtivas = [...ativasAtuais, task];
-    atual.taskIdCounter = taskId + 1;
-    atual.updatedAt = createdAt;
-    return atual;
-  }).then(result => {
-    showLoader(false);
-    if (!result.committed) { showToast('Conflito ao criar tarefa. Tente novamente.'); return; }
-    // Aplica localmente sem esperar o listener (mais responsivo)
-    aplicarSnapshot(result.snapshot.val(), true);
-    _ultimoSaveAt = Date.now();
-    showToast(`Via cega ${reg.via} adicionada!`);
-  }).catch(() => { showLoader(false); showToast('Erro ao criar tarefa. Verifique a conexão.'); });
+  // Alocação local — usa estado atual em memória
+  const reservedTx = new Set(tarefasAtivas.flatMap(t => t.alocacao.flatMap(a => a.enderecos.map(e => e.key))));
+  const grupos = coletarEnderecosPorPredioTx(ruasValidas, reg.nivelMin, reg.nivelMax, reservedTx, finalizedAddressesSet);
+  let restante = reg.paletes;
+  const alocacao = [];
+  for (let grupo of grupos) {
+    if (restante <= 0) break;
+    const pegar = Math.min(grupo.enderecos.length, restante);
+    alocacao.push({ rua: grupo.rua, enderecos: grupo.enderecos.slice(0, pegar), alocados: pegar, totalDisponivel: grupo.enderecos.length });
+    restante -= pegar;
+  }
+  const totalAlocados = reg.paletes - restante;
+  const createdAt = Date.now();
+  const task = {
+    id: taskIdCounter,
+    prod: prodCopy,
+    reg: { via: reg.via, forn: reg.forn, mat: reg.mat, emp: reg.emp, paletes: reg.paletes, nivelMin: reg.nivelMin, nivelMax: reg.nivelMax },
+    alocacao, totalAlocados, faltam: restante, ruasValidas, createdAt,
+    createdBy: _operadorNome
+  };
+  taskIdCounter++;
+  tarefasAtivas.push(task);
+  atualizarReservedAddresses();
+  renderActiveTasks();
+  salvarDados();
+  showToast(`Via cega ${reg.via} adicionada!`);
 }
 
 function confirmarTarefa(taskId){
   if(!confirm('Confirmar encerramento desta via cega?')) return;
-  const task = tarefasAtivas.find(t => t.id === taskId);
-  if (!task) return;
+  const idx = tarefasAtivas.findIndex(t => t.id === taskId);
+  if (idx === -1) return;
+  const task = tarefasAtivas[idx];
   const finishedAt = Date.now();
   const totalSeconds = Math.floor((finishedAt - task.createdAt) / 1000);
-  // Fix #3: transação atômica para confirmar
-  db.ref('armazenagem').transaction(atual => {
-    if (!atual) return atual;
-    const idx = (atual.tarefasAtivas || []).findIndex(t => t.id === taskId);
-    if (idx === -1) return; // tarefa já não existe (outro usuário cancelou)
-    const taskFin = { ...atual.tarefasAtivas[idx], finishedAt, totalSeconds };
-    atual.tarefasAtivas.splice(idx, 1);
-    atual.tarefasFinalizadas = atual.tarefasFinalizadas || [];
-    if (atual.tarefasFinalizadas.length >= MAX_FINALIZADAS) {
-      atual.tarefasFinalizadas = atual.tarefasFinalizadas.slice(-MAX_FINALIZADAS + 1);
-    }
-    atual.tarefasFinalizadas.push(taskFin);
-    atual.finalizedAddressesSet = Array.from(new Set([
-      ...(atual.finalizedAddressesSet || []),
-      ...taskFin.alocacao.flatMap(a => a.enderecos.map(e => e.key))
-    ]));
-    atual.updatedAt = finishedAt;
-    return atual;
-  }).then(result => {
-    if (!result.committed) { showToast('Erro: tarefa não encontrada. Já foi alterada por outro usuário.'); return; }
-    aplicarSnapshot(result.snapshot.val(), true);
-    _ultimoSaveAt = Date.now();
-    showToast('✅ Via cega finalizada.');
-  }).catch(() => showToast('Erro ao finalizar. Verifique a conexão.'));
+  task.finishedAt = finishedAt;
+  task.totalSeconds = totalSeconds;
+  // Move da ativa para finalizada
+  tarefasAtivas.splice(idx, 1);
+  tarefasFinalizadas.push(task);
+  // Adiciona endereços ao set bloqueado
+  task.alocacao.forEach(a => a.enderecos.forEach(e => finalizedAddressesSet.add(e.key)));
+  atualizarReservedAddresses();
+  renderActiveTasks();
+  renderCompletedTasks();
+  salvarDados();
+  showToast('✅ Via cega finalizada.');
 }
 
 function cancelarTarefa(taskId){
   if(!confirm('Cancelar este endereçamento?')) return;
-  // Fix #3: transação atômica para cancelar
-  db.ref('armazenagem').transaction(atual => {
-    if (!atual) return atual;
-    atual.tarefasAtivas = (atual.tarefasAtivas || []).filter(t => t.id !== taskId);
-    atual.updatedAt = Date.now();
-    return atual;
-  }).then(result => {
-    if (!result.committed) return;
-    aplicarSnapshot(result.snapshot.val(), true);
-    _ultimoSaveAt = Date.now();
-    showToast('Tarefa cancelada.');
-  }).catch(() => showToast('Erro ao cancelar. Verifique a conexão.'));
+  tarefasAtivas = tarefasAtivas.filter(t => t.id !== taskId);
+  atualizarReservedAddresses();
+  renderActiveTasks();
+  salvarDados();
+  showToast('Tarefa cancelada.');
 }
 function editarTarefa(taskId){
   const task=tarefasAtivas.find(t=>t.id===taskId);
