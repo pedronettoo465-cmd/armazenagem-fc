@@ -511,7 +511,7 @@ function sbSetStatus(online, saving) {
 function fbSetStatus(online,saving){sbSetStatus(online,saving);}
 
 function sbLer() {
-  return fetch(_SB_URL+'/rest/v1/armazenagem?id=eq.'+ROW_ID+'&select=dados',{headers:_SB_HEADERS})
+  return fetch(_SB_URL+'/rest/v1/armazenagem-fc?id=eq.'+ROW_ID+'&select=dados',{headers:_SB_HEADERS})
     .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
     .then(function(rows){if(!rows||rows.length===0)return null;return JSON.parse(rows[0].dados);});
 }
@@ -519,7 +519,7 @@ function sbLer() {
 function sbGravar(payload) {
   var body=JSON.stringify({id:ROW_ID,dados:JSON.stringify(payload)});
   var hdrs=Object.assign({},_SB_HEADERS,{'Prefer':'resolution=merge-duplicates'});
-  return fetch(_SB_URL+'/rest/v1/armazenagem',{method:'POST',headers:hdrs,body:body})
+  return fetch(_SB_URL+'/rest/v1/armazenagem-fc',{method:'POST',headers:hdrs,body:body})
     .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);});
 }
 
