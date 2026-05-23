@@ -546,6 +546,15 @@ function salvarDados() {
       localStorage.setItem('fc_arm_config',JSON.stringify(ruaLinhaMap));
       localStorage.setItem('fc_arm_tipos_rua',JSON.stringify(tiposRua));
     }
+    // Cache completo no localStorage para abertura instantânea ao recarregar
+    var cacheState = {
+      tarefasAtivas:tarefasAtivas,
+      tarefasFinalizadas:tarefasFinalizadas,
+      taskIdCounter:taskIdCounter,
+      fornecedoresManuais:fornecedoresManuais,
+      finalizedAddressesSet:Array.from(finalizedAddressesSet)
+    };
+    localStorage.setItem('fc_arm_cache',JSON.stringify(cacheState));
   } catch(e){console.warn(e);}
   var now=Date.now();
   _ultimoSaveAt=now;
@@ -570,6 +579,13 @@ function aplicarSnapshot(data, forcado) {
   finalizedAddressesSet=new Set(data.finalizedAddressesSet||[]);
   if(data.ruaLinhaMap){ruaLinhaMap=data.ruaLinhaMap;localStorage.setItem('fc_arm_config',JSON.stringify(ruaLinhaMap));}
   if(data.tiposRua){tiposRua=data.tiposRua;localStorage.setItem('fc_arm_tipos_rua',JSON.stringify(tiposRua));}
+  // Atualiza cache local sempre que recebe novos dados
+  try {
+    localStorage.setItem('fc_arm_cache',JSON.stringify({
+      tarefasAtivas:tarefasAtivas,tarefasFinalizadas:tarefasFinalizadas,taskIdCounter:taskIdCounter,
+      fornecedoresManuais:fornecedoresManuais,finalizedAddressesSet:Array.from(finalizedAddressesSet)
+    }));
+  } catch(e){}
   atualizarReservedAddresses();
   atualizarFinalizedAddressesByRuaLinha();
   renderActiveTasks();
@@ -599,15 +615,35 @@ function carregarDados() {
   var savedTipos=localStorage.getItem('fc_arm_tipos_rua');
   if(savedHash)planilhaHash=savedHash;
   if(savedTipos)tiposRua=JSON.parse(savedTipos);
+  // Carrega cache local primeiro para mostrar tela instantaneamente
+  try {
+    var cache=localStorage.getItem('fc_arm_cache');
+    if(cache){
+      var c=JSON.parse(cache);
+      tarefasAtivas=(c.tarefasAtivas||[]).map(function(t){if(!t.reg.nivelMin)t.reg.nivelMin=2;if(!t.reg.nivelMax)t.reg.nivelMax=7;return t;});
+      tarefasFinalizadas=(c.tarefasFinalizadas||[]).map(function(t){if(!t.reg.nivelMin)t.reg.nivelMin=2;if(!t.reg.nivelMax)t.reg.nivelMax=7;return t;});
+      taskIdCounter=c.taskIdCounter||0;
+      fornecedoresManuais=c.fornecedoresManuais||[];
+      finalizedAddressesSet=new Set(c.finalizedAddressesSet||[]);
+      atualizarReservedAddresses();
+      atualizarFinalizedAddressesByRuaLinha();
+      renderActiveTasks();
+      renderCompletedTasks();
+      atualizarListaFornecedores();
+    }
+  } catch(e){console.warn('cache local invalido',e);}
   renderTiposRua();
   if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();
+  // Depois busca do Supabase para garantir que está atualizado
   sbLer().then(function(data){
     if(data)aplicarSnapshot(data,true);
     iniciarPolling();
     sbSetStatus(true);
   }).catch(function(){
     sbSetStatus(false);
-    showToast('\u26A0\uFE0F Sem conexao com Supabase. Verifique a internet.');
+    showToast('\u26A0\uFE0F Sem conexao com Supabase. Trabalhando offline.');
+    // Mesmo sem conexão, inicia polling para reconectar quando voltar
+    iniciarPolling();
   });
 }
 
@@ -753,7 +789,11 @@ function buildData(){
 function atualizarListaFornecedores(){ if(floatingDropdown) preencherFornecedores(document.getElementById('fornecedor-input')?.value||''); const area=document.getElementById('cadastrar-fornecedor-area'); if(area) area.innerHTML='<button class="cadastrar-fornecedor-btn" onclick="abrirModalCadastroFornecedor()">+ Cadastrar Fornecedor</button>'; }
 function buildRuaGrid(){ const grid=document.getElementById('rua-grid'); if(!grid)return; const linhas=Object.entries(linhasMap).sort((a,b)=>a[0].localeCompare(b[0])); grid.innerHTML=RUAS.map(rua=>{ const checkboxes=linhas.map(([k,v])=>`<div class="rua-linha-opt"><input type="checkbox" id="rc-${rua}-${k}" value="${k}" onchange="setRuaLinhas(${rua})"><label for="rc-${rua}-${k}">${k} · ${v}</label></div>`).join(''); return `<div class="rua-item" id="ri-${rua}"><div class="rua-hdr"><span class="rua-num">RUA ${String(rua).padStart(2,'0')}</span><span class="rua-check">✅</span></div><div class="rua-linhas-wrap" id="rlw-${rua}">${checkboxes}</div><div class="rua-tags" id="rtags-${rua}"></div></div>`; }).join(''); }
 function setRuaLinhas(rua){ const wrap=document.getElementById(`rlw-${rua}`); if(!wrap)return; const checked=[...wrap.querySelectorAll('input[type=checkbox]:checked')].map(c=>c.value); ruaLinhaMap[rua]=checked.length?checked:null; const item=document.getElementById(`ri-${rua}`); if(item)item.classList.toggle('configured',checked.length>0); const tags=document.getElementById(`rtags-${rua}`); if(tags)tags.innerHTML=checked.map(k=>`<span class="rua-tag-pill">${k} · ${linhasMap[k]||k}</span>`).join(''); saveConfig(); }
-function saveConfig(){localStorage.setItem('fc_arm_config',JSON.stringify(ruaLinhaMap));}
+function saveConfig(){
+  localStorage.setItem('fc_arm_config',JSON.stringify(ruaLinhaMap));
+  // Sincroniza com Supabase para que outras máquinas vejam a configuração
+  if (typeof salvarDados === 'function') salvarDados();
+}
 const DEFAULT_RUA_LINHAS={1:['ELETROS'],2:['ELETROS'],3:['ELETROS'],4:['ELETROS'],5:['CAMA, MESA E BANHO','CAMEBA','DECORAÇÃO','DECORACAO'],6:['ELETRÔNICOS','ELETRONICOS','INFANTIL','LAZER','PETS'],7:['BÁSICOS PARA CONSTRUÇÃO','BASICOS PARA CONSTRUCAO','MÁQUINAS E MOTORES','MAQUINAS E MOTORES'],8:['TUBOS E CONEXÕES','TUBOS E CONEXOES','PIAS E GABINETES'],9:['UTILIDADE DOMÉSTICA','UTILIDADE DOMESTICA','UD'],10:['UTILIDADE DOMÉSTICA','UTILIDADE DOMESTICA','UD'],11:['EPI','JARDINAGEM','INDUSTRIAL','NEGÓCIOS','NEGOCIOS'],12:['ILUMINAÇÃO','ILUMINACAO','ARTIGOS DA ÉPOCA','ARTIGOS DA EPOCAS'],13:['MÓVEIS MADEIRA','MOVEIS MADEIRA','MÓVEIS','MOVEIS'],14:['MÓVEIS MADEIRA','MOVEIS MADEIRA','MÓVEIS','MOVEIS'],15:['MÓVEIS MADEIRA','MOVEIS MADEIRA','MÓVEIS','MOVEIS'],16:['MÓVEIS MADEIRA','MOVEIS MADEIRA','MÓVEIS','MOVEIS'],17:['BLOCADO ELETRO','ESPUMAS'],18:['METAIS E ACESSÓRIOS','METAIS E ACESSORIOS','METAIS'],19:['MATERIAIS ELÉTRICOS','MATERIAIS ELETRICOS','AUTOMOTIVO'],20:['FERRAMENTAS','PORTAS','JANELAS','FECHADURAS','MATERIAL ELÉTRICO','MATERIAL ELETRICO'],21:[],22:['AUTOMOTIVO','TINTAS','QUÍMICOS','QUIMICOS'],23:[],24:[],25:['LOUÇAS E PIAS','LOUCAS E PIAS','LOUÇAS','LOUCAS'],26:['LOUÇAS E PIAS','LOUCAS E PIAS','LOUÇAS','LOUCAS'],27:['LOUÇAS E PIAS','LOUCAS E PIAS','LOUÇAS','LOUCAS'],28:['PISOS E REVESTIMENTOS','PNEUS'],29:['PISOS E REVESTIMENTOS','PNEUS'],30:['PISOS E REVESTIMENTOS','PNEUS']};
 function findLinhaCode(keywords){const entries=Object.entries(linhasMap); for(const kw of keywords){const kwUp=kw.toUpperCase().trim(); const exact=entries.find(([,d])=>d.toUpperCase().trim()===kwUp); if(exact)return exact[0]; const partial=entries.find(([,d])=>d.toUpperCase().includes(kwUp)||kwUp.includes(d.toUpperCase())); if(partial)return partial[0];} return null;}
 function applyDefaultLayout(){RUAS.forEach(rua=>{if(ruaLinhaMap[rua]&&ruaLinhaMap[rua].length)return; const keywords=DEFAULT_RUA_LINHAS[rua]; if(!keywords||!keywords.length)return; const codesFound=[]; keywords.forEach(kw=>{const code=findLinhaCode([kw]); if(code&&!codesFound.includes(code))codesFound.push(code);}); if(!codesFound.length)return; ruaLinhaMap[rua]=codesFound; const wrap=document.getElementById(`rlw-${rua}`); if(wrap){codesFound.forEach(code=>{const cb=document.getElementById(`rc-${rua}-${code}`); if(cb)cb.checked=true;}); const item=document.getElementById(`ri-${rua}`);if(item)item.classList.add('configured'); const tags=document.getElementById(`rtags-${rua}`);if(tags)tags.innerHTML=codesFound.map(k=>`<span class="rua-tag-pill">${k} · ${linhasMap[k]||k}</span>`).join('');}}); saveConfig();}
