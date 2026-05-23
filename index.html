@@ -413,6 +413,8 @@ input[readonly] { background-color: var(--surface3); cursor: default; color: var
 // ================== REGRAS DE APARTAMENTOS ==================
 function getMaxApartamento(rua, predio, nivel, tipoRua = 'padrao') {
   if (tipoRua === 'porta_palete') {
+    // Rua 13: prédios PARES só têm aptos 1 e 2 (regra física do CD)
+    if (rua === 13 && predio % 2 === 0) return 2;
     if (rua >= 1 && rua <= 12) return 2;
     if (rua >= 13 && rua <= 16) return 3;
     if ([18,19,20].includes(rua)) {
@@ -747,6 +749,7 @@ function buildData(){
     if(prediosBloqueados.includes(pred)) return;
     if(pred > 100) return;
     if(rua===16 && pred%2!==0) return;
+    if(rua===13 && pred%2===0 && apto>2) return; // Rua 13: prédios pares só têm aptos 1 e 2
     const key=`${rua}|${pred}|${nivel}|${apto}`;
     occupiedSet.add(key);
     // Registra qual(is) linha(s) de produto ocupam este endereço
@@ -1047,6 +1050,22 @@ function cancelarTarefa(taskId){
   salvarDados();
   showToast('Tarefa cancelada.');
 }
+
+function excluirTarefaFinalizada(taskId){
+  const task = tarefasFinalizadas.find(t => t.id === taskId);
+  if (!task) return;
+  const msg = `Excluir permanentemente a Via ${task.reg.via} (${task.reg.forn})?\n\nOs endereços usados nesta ordem serão liberados e poderão ser reutilizados.`;
+  if(!confirm(msg)) return;
+  // Remove a tarefa
+  tarefasFinalizadas = tarefasFinalizadas.filter(t => t.id !== taskId);
+  // Libera os endereços que estavam bloqueados por essa ordem
+  task.alocacao.forEach(a => a.enderecos.forEach(e => finalizedAddressesSet.delete(e.key)));
+  // Reconstrói o set para o caso de outras ordens finalizadas usarem os mesmos endereços
+  atualizarFinalizedAddressesByRuaLinha();
+  renderCompletedTasks();
+  salvarDados();
+  showToast('Ordem excluída e endereços liberados.');
+}
 function editarTarefa(taskId){
   const task=tarefasAtivas.find(t=>t.id===taskId);
   if(!task)return;
@@ -1185,7 +1204,7 @@ function renderCompletedTasks(){
       });
       bodyHtml+=`</div></div>`;
     }
-    bodyHtml+=`<div class="task-actions"><button class="print-task-btn" onclick="imprimirTarefaPorId(${id}, false)">🖨️ Imprimir</button></div></div>`;
+    bodyHtml+=`<div class="task-actions"><button class="print-task-btn" onclick="imprimirTarefaPorId(${id}, false)">🖨️ Imprimir</button><button class="action-btn cancel" onclick="excluirTarefaFinalizada(${id})">🗑️ Excluir</button></div></div>`;
     const toggleIcon=expanded?'▲':'▼';
     return `<div class="task-card completed"><div class="task-header" onclick="toggleExpand(${id})"><div class="task-header-left"><span class="task-badge">Via C: ${reg.via}</span><span class="task-title">${reg.forn} - ${reg.emp}</span>${criadoPor}<span class="task-timer" id="timer-${id}" style="background:var(--fc-green-bg);color:var(--fc-green)">${timerDisplay}</span></div><div class="task-header-right"><span style="font-size:10px;color:var(--muted2)">${finHora}</span><span class="task-toggle-icon">${toggleIcon}</span></div></div>${bodyHtml}</div>`;
   }).join('');
