@@ -491,21 +491,17 @@ function atualizarFinalizedAddressesByRuaLinha() {
   });
 }
 
-// ================== SUPABASE SYNC v2 — Seguro + Merge + Backoff ==================
-// SEGURANÇA: A chave Supabase foi removida do HTML.
-// Toda comunicação passa pela Edge Function "armazenagem-proxy" no Supabase.
-// COMO CONFIGURAR:
-//   1. Crie a Edge Function "armazenagem-proxy" no painel Supabase (código no repositório: /supabase/functions/armazenagem-proxy/index.ts)
-//   2. Em Settings > Secrets, adicione: APP_TOKEN = (uma senha longa, ex: "FC@Arm2026!seguro")
-//   3. Execute o migration.sql para adicionar a coluna 'version' e habilitar RLS
-//   4. Substitua o valor de _SB_APP_TOKEN abaixo pela mesma senha do Secret APP_TOKEN
-const _SB_PROXY = 'https://yufgjiyeanjqtcwejagq.supabase.co/functions/v1/armazenagem-proxy';
-const _SB_APP_TOKEN = 'SUBSTITUA_PELO_SEU_APP_TOKEN'; // mesmo valor do Secret APP_TOKEN no Supabase
+// ================== SUPABASE SYNC (rollback: chave anon direta + melhorias mantidas) ==================
+// NOTA: Esta versão usa a chave anon direta na URL REST do Supabase.
+// É a versão funcional usada antes da migração para Edge Function.
+// As melhorias de UX, debounce, backoff de polling e correções de bug continuam ativas.
+const _SB_URL = 'https://yufgjiyeanjqtcwejagq.supabase.co';
+const _SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1ZmdqaXllYW5qcXRjd2VqYWdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NjI5NjIsImV4cCI6MjA5NTAzODk2Mn0.6mzJ8bhhHS37lcHwNrbkv3j1jogFowOpAU0_TRU6FlM';
+const _SB_HEADERS = {'Content-Type':'application/json','apikey':_SB_KEY,'Authorization':'Bearer '+_SB_KEY};
 const ROW_ID = 1;
 let _ultimoSaveAt = 0;
 let _pollingInterval = null;
-let _currentVersion = 0;       // versão local para controle otimista de concorrência
-let _pollingDelay = 5000;      // começa em 5s, aumenta com backoff se offline
+let _pollingDelay = 5000;
 let _pollingFailCount = 0;
 let _saveDebounceTimer = null;
 let _operadorNome = '';
@@ -516,15 +512,14 @@ function getVisual(id,k,def){return _localVisual[id]?.[k]??def;}
 
 // --- Status visual aprimorado ---
 function sbSetStatus(state) {
-  // state: 'online' | 'saving' | 'offline' | 'conflict' | 'retrying'
+  // state: 'online' | 'saving' | 'offline' | 'retrying'
   var dot=document.getElementById('fb-dot'), lbl=document.getElementById('fb-label');
   var reloadBtn=document.getElementById('sb-reload-btn');
-  var colors={online:'var(--fc-green)',saving:'var(--amber)',offline:'#E30613',conflict:'#a855f7',retrying:'var(--amber)'};
-  var labels={online:'Sincronizado',saving:'Salvando...',offline:'Sem conexão',conflict:'Conflito resolvido',retrying:'Reconectando...'};
+  var colors={online:'var(--fc-green)',saving:'var(--amber)',offline:'#E30613',retrying:'var(--amber)'};
+  var labels={online:'Sincronizado',saving:'Salvando...',offline:'Sem conexão',retrying:'Reconectando...'};
   if(dot)dot.style.background=colors[state]||'var(--muted)';
   if(lbl)lbl.textContent=labels[state]||state;
   if(reloadBtn)reloadBtn.style.display=(state==='offline')?'inline-block':'none';
-  if(state==='conflict')setTimeout(function(){sbSetStatus('online');},4000);
 }
 // alias legado — não quebra chamadas antigas de fbSetStatus(online, saving)
 function fbSetStatus(online,saving){sbSetStatus(saving?'saving':online?'online':'offline');}
@@ -542,64 +537,19 @@ function _injetarBotaoReload() {
   container.parentElement.appendChild(btn);
 }
 
-// --- Leitura via proxy seguro ---
+// --- Leitura via REST direto ---
 function sbLer() {
-  return fetch(_SB_PROXY+'?action=ler',{headers:{'x-app-token':_SB_APP_TOKEN}})
+  return fetch(_SB_URL+'/rest/v1/armazenagem-fc?id=eq.'+ROW_ID+'&select=dados',{headers:_SB_HEADERS})
     .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
-    .then(function(row){
-      if(!row||!row.dados)return null;
-      var data=JSON.parse(row.dados);
-      data._version=row.version||0;
-      return data;
-    });
+    .then(function(rows){if(!rows||rows.length===0)return null;return JSON.parse(rows[0].dados);});
 }
 
-// --- Escrita com controle otimista de versão e retry automático ---
+// --- Escrita via REST direto ---
 function sbGravar(payload) {
-  return fetch(_SB_PROXY+'?action=gravar',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-app-token':_SB_APP_TOKEN},
-    body:JSON.stringify({dados:payload,expectedVersion:_currentVersion})
-  }).then(function(r){
-    if(r.status===409){
-      // Conflito de versão: lê dados remotos, faz merge e re-tenta
-      return r.json().then(function(body){return _resolverConflito(body.current,payload);});
-    }
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    return r.json().then(function(res){_currentVersion=res.version||(_currentVersion+1);});
-  });
-}
-
-// Merge otimista: une tarefas locais e remotas preferindo a versão mais recente de cada uma
-function _resolverConflito(remoto,local) {
-  var remotoParsed;
-  try{remotoParsed=typeof remoto.dados==='string'?JSON.parse(remoto.dados):remoto.dados;}
-  catch(e){remotoParsed={};}
-  var mergedAtivas=_mergeTarefas(local.tarefasAtivas||[],remotoParsed.tarefasAtivas||[]);
-  var mergedFin=_mergeTarefas(local.tarefasFinalizadas||[],remotoParsed.tarefasFinalizadas||[]);
-  var finSet=Array.from(new Set((local.finalizedAddressesSet||[]).concat(remotoParsed.finalizedAddressesSet||[])));
-  _currentVersion=remoto.version||0;
-  var merged=Object.assign({},remotoParsed,local,{
-    tarefasAtivas:mergedAtivas,
-    tarefasFinalizadas:mergedFin,
-    finalizedAddressesSet:finSet,
-    updatedAt:Date.now()
-  });
-  aplicarSnapshot(merged,true);
-  sbSetStatus('conflict');
-  showToast('⚠️ Conflito detectado — dados mesclados automaticamente.');
-  return sbGravar(merged);
-}
-
-// Une dois arrays de tarefas, preferindo a versão mais nova de cada id
-function _mergeTarefas(local,remoto) {
-  var mapa={};
-  remoto.forEach(function(t){mapa[t.id]=t;});
-  local.forEach(function(t){
-    var r=mapa[t.id];
-    if(!r||(t.updatedAt||0)>=(r.updatedAt||0))mapa[t.id]=t;
-  });
-  return Object.values(mapa);
+  var body=JSON.stringify({id:ROW_ID,dados:JSON.stringify(payload)});
+  var hdrs=Object.assign({},_SB_HEADERS,{'Prefer':'resolution=merge-duplicates'});
+  return fetch(_SB_URL+'/rest/v1/armazenagem-fc',{method:'POST',headers:hdrs,body:body})
+    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);});
 }
 
 function fazerLogin() {
@@ -661,7 +611,6 @@ function aplicarSnapshot(data, forcado) {
   finalizedAddressesSet=new Set(data.finalizedAddressesSet||[]);
   if(data.ruaLinhaMap){ruaLinhaMap=data.ruaLinhaMap;localStorage.setItem('fc_arm_config',JSON.stringify(ruaLinhaMap));}
   if(data.tiposRua){tiposRua=data.tiposRua;localStorage.setItem('fc_arm_tipos_rua',JSON.stringify(tiposRua));}
-  if(data._version!==undefined)_currentVersion=data._version;
   // Atualiza cache local sempre que recebe novos dados
   try {
     localStorage.setItem('fc_arm_cache',JSON.stringify({
