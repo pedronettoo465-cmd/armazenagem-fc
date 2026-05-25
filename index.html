@@ -491,38 +491,115 @@ function atualizarFinalizedAddressesByRuaLinha() {
   });
 }
 
-// ================== SUPABASE SYNC ==================
-const _SB_URL = 'https://yufgjiyeanjqtcwejagq.supabase.co';
-const _SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1ZmdqaXllYW5qcXRjd2VqYWdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NjI5NjIsImV4cCI6MjA5NTAzODk2Mn0.6mzJ8bhhHS37lcHwNrbkv3j1jogFowOpAU0_TRU6FlM';
-const _SB_HEADERS = {'Content-Type':'application/json','apikey':_SB_KEY,'Authorization':'Bearer '+_SB_KEY};
+// ================== SUPABASE SYNC v2 — Seguro + Merge + Backoff ==================
+// SEGURANÇA: A chave Supabase foi removida do HTML.
+// Toda comunicação passa pela Edge Function "armazenagem-proxy" no Supabase.
+// COMO CONFIGURAR:
+//   1. Crie a Edge Function "armazenagem-proxy" no painel Supabase (código no repositório: /supabase/functions/armazenagem-proxy/index.ts)
+//   2. Em Settings > Secrets, adicione: APP_TOKEN = (uma senha longa, ex: "FC@Arm2026!seguro")
+//   3. Execute o migration.sql para adicionar a coluna 'version' e habilitar RLS
+//   4. Substitua o valor de _SB_APP_TOKEN abaixo pela mesma senha do Secret APP_TOKEN
+const _SB_PROXY = 'https://yufgjiyeanjqtcwejagq.supabase.co/functions/v1/armazenagem-proxy';
+const _SB_APP_TOKEN = 'SUBSTITUA_PELO_SEU_APP_TOKEN'; // mesmo valor do Secret APP_TOKEN no Supabase
 const ROW_ID = 1;
 let _ultimoSaveAt = 0;
 let _pollingInterval = null;
+let _currentVersion = 0;       // versão local para controle otimista de concorrência
+let _pollingDelay = 5000;      // começa em 5s, aumenta com backoff se offline
+let _pollingFailCount = 0;
+let _saveDebounceTimer = null;
 let _operadorNome = '';
 const MAX_FINALIZADAS = 200;
 const _localVisual = {};
 function setVisual(id,k,v){if(!_localVisual[id])_localVisual[id]={};_localVisual[id][k]=v;}
 function getVisual(id,k,def){return _localVisual[id]?.[k]??def;}
 
-function sbSetStatus(online, saving) {
+// --- Status visual aprimorado ---
+function sbSetStatus(state) {
+  // state: 'online' | 'saving' | 'offline' | 'conflict' | 'retrying'
   var dot=document.getElementById('fb-dot'), lbl=document.getElementById('fb-label');
-  if(saving){if(dot)dot.style.background='var(--amber)';if(lbl)lbl.textContent='Salvando...';return;}
-  if(dot)dot.style.background=online?'var(--fc-green)':'#E30613';
-  if(lbl)lbl.textContent=online?'Sincronizado':'Sem conexao';
+  var reloadBtn=document.getElementById('sb-reload-btn');
+  var colors={online:'var(--fc-green)',saving:'var(--amber)',offline:'#E30613',conflict:'#a855f7',retrying:'var(--amber)'};
+  var labels={online:'Sincronizado',saving:'Salvando...',offline:'Sem conexão',conflict:'Conflito resolvido',retrying:'Reconectando...'};
+  if(dot)dot.style.background=colors[state]||'var(--muted)';
+  if(lbl)lbl.textContent=labels[state]||state;
+  if(reloadBtn)reloadBtn.style.display=(state==='offline')?'inline-block':'none';
+  if(state==='conflict')setTimeout(function(){sbSetStatus('online');},4000);
 }
-function fbSetStatus(online,saving){sbSetStatus(online,saving);}
+// alias legado — não quebra chamadas antigas de fbSetStatus(online, saving)
+function fbSetStatus(online,saving){sbSetStatus(saving?'saving':online?'online':'offline');}
 
+// Injeta botão de recarga no indicador de status (chamado uma vez no carregarDados)
+function _injetarBotaoReload() {
+  if(document.getElementById('sb-reload-btn'))return;
+  var container=document.getElementById('fb-dot');
+  if(!container||!container.parentElement)return;
+  var btn=document.createElement('button');
+  btn.id='sb-reload-btn';
+  btn.textContent='↺ Recarregar';
+  btn.style.cssText='display:none;margin-left:8px;font-size:11px;padding:2px 8px;border-radius:6px;border:1px solid #E30613;color:#E30613;background:transparent;cursor:pointer;font-family:inherit;';
+  btn.onclick=function(){sbLer().then(function(data){if(data){aplicarSnapshot(data,true);sbSetStatus('online');}});};
+  container.parentElement.appendChild(btn);
+}
+
+// --- Leitura via proxy seguro ---
 function sbLer() {
-  return fetch(_SB_URL+'/rest/v1/armazenagem-fc?id=eq.'+ROW_ID+'&select=dados',{headers:_SB_HEADERS})
+  return fetch(_SB_PROXY+'?action=ler',{headers:{'x-app-token':_SB_APP_TOKEN}})
     .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
-    .then(function(rows){if(!rows||rows.length===0)return null;return JSON.parse(rows[0].dados);});
+    .then(function(row){
+      if(!row||!row.dados)return null;
+      var data=JSON.parse(row.dados);
+      data._version=row.version||0;
+      return data;
+    });
 }
 
+// --- Escrita com controle otimista de versão e retry automático ---
 function sbGravar(payload) {
-  var body=JSON.stringify({id:ROW_ID,dados:JSON.stringify(payload)});
-  var hdrs=Object.assign({},_SB_HEADERS,{'Prefer':'resolution=merge-duplicates'});
-  return fetch(_SB_URL+'/rest/v1/armazenagem-fc',{method:'POST',headers:hdrs,body:body})
-    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);});
+  return fetch(_SB_PROXY+'?action=gravar',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-app-token':_SB_APP_TOKEN},
+    body:JSON.stringify({dados:payload,expectedVersion:_currentVersion})
+  }).then(function(r){
+    if(r.status===409){
+      // Conflito de versão: lê dados remotos, faz merge e re-tenta
+      return r.json().then(function(body){return _resolverConflito(body.current,payload);});
+    }
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    return r.json().then(function(res){_currentVersion=res.version||(_currentVersion+1);});
+  });
+}
+
+// Merge otimista: une tarefas locais e remotas preferindo a versão mais recente de cada uma
+function _resolverConflito(remoto,local) {
+  var remotoParsed;
+  try{remotoParsed=typeof remoto.dados==='string'?JSON.parse(remoto.dados):remoto.dados;}
+  catch(e){remotoParsed={};}
+  var mergedAtivas=_mergeTarefas(local.tarefasAtivas||[],remotoParsed.tarefasAtivas||[]);
+  var mergedFin=_mergeTarefas(local.tarefasFinalizadas||[],remotoParsed.tarefasFinalizadas||[]);
+  var finSet=Array.from(new Set((local.finalizedAddressesSet||[]).concat(remotoParsed.finalizedAddressesSet||[])));
+  _currentVersion=remoto.version||0;
+  var merged=Object.assign({},remotoParsed,local,{
+    tarefasAtivas:mergedAtivas,
+    tarefasFinalizadas:mergedFin,
+    finalizedAddressesSet:finSet,
+    updatedAt:Date.now()
+  });
+  aplicarSnapshot(merged,true);
+  sbSetStatus('conflict');
+  showToast('⚠️ Conflito detectado — dados mesclados automaticamente.');
+  return sbGravar(merged);
+}
+
+// Une dois arrays de tarefas, preferindo a versão mais nova de cada id
+function _mergeTarefas(local,remoto) {
+  var mapa={};
+  remoto.forEach(function(t){mapa[t.id]=t;});
+  local.forEach(function(t){
+    var r=mapa[t.id];
+    if(!r||(t.updatedAt||0)>=(r.updatedAt||0))mapa[t.id]=t;
+  });
+  return Object.values(mapa);
 }
 
 function fazerLogin() {
@@ -542,32 +619,35 @@ function fazerLogin() {
 }
 
 function salvarDados() {
+  // Cache local imediato — não espera o debounce
   try {
     localStorage.setItem('fc_arm_planilha_hash',planilhaHash);
     if(Object.keys(ruaLinhaMap).length>0){
       localStorage.setItem('fc_arm_config',JSON.stringify(ruaLinhaMap));
       localStorage.setItem('fc_arm_tipos_rua',JSON.stringify(tiposRua));
     }
-    // Cache completo no localStorage para abertura instantânea ao recarregar
-    var cacheState = {
-      tarefasAtivas:tarefasAtivas,
-      tarefasFinalizadas:tarefasFinalizadas,
-      taskIdCounter:taskIdCounter,
-      fornecedoresManuais:fornecedoresManuais,
-      finalizedAddressesSet:Array.from(finalizedAddressesSet)
-    };
+    var cacheState={tarefasAtivas:tarefasAtivas,tarefasFinalizadas:tarefasFinalizadas,taskIdCounter:taskIdCounter,
+      fornecedoresManuais:fornecedoresManuais,finalizedAddressesSet:Array.from(finalizedAddressesSet)};
     localStorage.setItem('fc_arm_cache',JSON.stringify(cacheState));
   } catch(e){console.warn(e);}
+  // Debounce 800ms — evita múltiplos saves em sequência rápida
+  if(_saveDebounceTimer)clearTimeout(_saveDebounceTimer);
+  _saveDebounceTimer=setTimeout(_executarSave,800);
+}
+
+function _executarSave() {
+  var temDados=tarefasAtivas.length>0||tarefasFinalizadas.length>0||taskIdCounter>0||finalizedAddressesSet.size>0;
+  if(!temDados)return;
+  if(tarefasFinalizadas.length>MAX_FINALIZADAS)tarefasFinalizadas=tarefasFinalizadas.slice(-MAX_FINALIZADAS);
   var now=Date.now();
   _ultimoSaveAt=now;
-  sbSetStatus(true,true);
-  var temDados=tarefasAtivas.length>0||tarefasFinalizadas.length>0||taskIdCounter>0||finalizedAddressesSet.size>0;
-  if(!temDados){sbSetStatus(true);return;}
-  if(tarefasFinalizadas.length>MAX_FINALIZADAS)tarefasFinalizadas=tarefasFinalizadas.slice(-MAX_FINALIZADAS);
+  sbSetStatus('saving');
   var payload={tarefasAtivas:tarefasAtivas,tarefasFinalizadas:tarefasFinalizadas,taskIdCounter:taskIdCounter,
     fornecedoresManuais:fornecedoresManuais,finalizedAddressesSet:Array.from(finalizedAddressesSet),updatedAt:now};
   if(Object.keys(ruaLinhaMap).length>0){payload.ruaLinhaMap=ruaLinhaMap;payload.tiposRua=tiposRua;}
-  sbGravar(payload).then(function(){sbSetStatus(true);}).catch(function(){sbSetStatus(false);});
+  sbGravar(payload)
+    .then(function(){sbSetStatus('online');_pollingFailCount=0;_pollingDelay=5000;})
+    .catch(function(){sbSetStatus('offline');});
 }
 
 function aplicarSnapshot(data, forcado) {
@@ -581,6 +661,7 @@ function aplicarSnapshot(data, forcado) {
   finalizedAddressesSet=new Set(data.finalizedAddressesSet||[]);
   if(data.ruaLinhaMap){ruaLinhaMap=data.ruaLinhaMap;localStorage.setItem('fc_arm_config',JSON.stringify(ruaLinhaMap));}
   if(data.tiposRua){tiposRua=data.tiposRua;localStorage.setItem('fc_arm_tipos_rua',JSON.stringify(tiposRua));}
+  if(data._version!==undefined)_currentVersion=data._version;
   // Atualiza cache local sempre que recebe novos dados
   try {
     localStorage.setItem('fc_arm_cache',JSON.stringify({
@@ -606,13 +687,27 @@ function aplicarSnapshot(data, forcado) {
 
 function iniciarPolling() {
   if(_pollingInterval)return;
-  _pollingInterval=setInterval(function(){
-    sbLer().then(function(data){if(data){aplicarSnapshot(data,false);sbSetStatus(true);}})
-           .catch(function(){sbSetStatus(false);});
-  },2000);
+  var tick=function(){
+    sbLer()
+      .then(function(data){
+        if(data){aplicarSnapshot(data,false);sbSetStatus('online');}
+        _pollingFailCount=0;
+        _pollingDelay=5000;
+        _pollingInterval=setTimeout(tick,_pollingDelay);
+      })
+      .catch(function(){
+        sbSetStatus('offline');
+        _pollingFailCount++;
+        // Backoff exponencial: 5s → 10s → 20s → 30s (máx)
+        _pollingDelay=Math.min(30000,5000*Math.pow(2,_pollingFailCount-1));
+        _pollingInterval=setTimeout(tick,_pollingDelay);
+      });
+  };
+  _pollingInterval=setTimeout(tick,_pollingDelay);
 }
 
 function carregarDados() {
+  _injetarBotaoReload();
   var savedHash=localStorage.getItem('fc_arm_planilha_hash');
   var savedTipos=localStorage.getItem('fc_arm_tipos_rua');
   if(savedHash)planilhaHash=savedHash;
@@ -640,10 +735,10 @@ function carregarDados() {
   sbLer().then(function(data){
     if(data)aplicarSnapshot(data,true);
     iniciarPolling();
-    sbSetStatus(true);
+    sbSetStatus('online');
   }).catch(function(){
-    sbSetStatus(false);
-    showToast('\u26A0\uFE0F Sem conexao com Supabase. Trabalhando offline.');
+    sbSetStatus('offline');
+    showToast('\u26A0\uFE0F Sem conexão com o servidor. Trabalhando offline.');
     // Mesmo sem conexão, inicia polling para reconectar quando voltar
     iniciarPolling();
   });
@@ -805,7 +900,7 @@ function resetToDefault(){if(!confirm('Restaurar layout padrão?'))return; local
 function renderTiposRua(){const grid=document.getElementById('tipos-rua-grid'); if(!grid)return; const tipos=['porta_palete','blocado','stage']; grid.innerHTML=RUAS.map(rua=>{const atual=tiposRua[rua]||'porta_palete'; return `<div class="rua-item" style="margin-bottom:8px"><div class="rua-hdr"><span class="rua-num">RUA ${rua}</span></div><select id="tipo-${rua}" class="tipo-rua-select">${tipos.map(t=>`<option value="${t}" ${atual===t?'selected':''}>${t==='porta_palete'?'Porta Palete':t==='blocado'?'Blocado Dinâmico':'Stage'}</option>`).join('')}</select></div>`;}).join('');}
 function salvarTiposRua(){RUAS.forEach(rua=>{const sel=document.getElementById(`tipo-${rua}`); if(sel)tiposRua[rua]=sel.value;}); salvarDados(); showToast('Tipos de rua salvos!');}
 function showTabs(){const nav=document.getElementById('tab-nav');if(nav)nav.style.display='flex'; showTab('ativas');}
-function showTab(tab){['upload','config','tipos','ativas','finalizadas','mapa','layout'].forEach(t=>{const view=document.getElementById(`view-${t}`);if(view)view.style.display=t===tab?'':'none'; const btn=document.getElementById(`tab-btn-${t}`);if(btn)btn.classList.toggle('active',t===tab);}); if(tab==='ativas')renderActiveTasks(); if(tab==='finalizadas')renderCompletedTasks(); if(tab==='mapa')renderMapa(); if(tab==='layout')renderLayout();}
+function showTab(tab){['upload','config','tipos','ativas','finalizadas','mapa','layout'].forEach(t=>{const view=document.getElementById(`view-${t}`);if(view)view.style.display=t===tab?'':'none'; const btn=document.getElementById(`tab-btn-${t}`);if(btn)btn.classList.toggle('active',t===tab);}); if(tab==='ativas'){_lastActiveHTML='';renderActiveTasks();} if(tab==='finalizadas'){_lastCompletedHTML='';renderCompletedTasks();} if(tab==='mapa')renderMapa(); if(tab==='layout')renderLayout();}
 
 // ================== COMBOBOX FORNECEDORES ==================
 let floatingDropdown=null, isDropdownOpen=false;
@@ -883,7 +978,12 @@ function confirmModal(){
   let nivelMax=parseInt(document.getElementById('modal-nivel-max').value,10);
   if(isNaN(nivelMin) || nivelMin<2) nivelMin=2;
   if(isNaN(nivelMax) || nivelMax<2) nivelMax=7;
-  if(nivelMin>nivelMax) { showToast('Nível mínimo não pode ser maior que o máximo.'); return; }
+  if(nivelMin>nivelMax) {
+    const elMin=document.getElementById('modal-nivel-min');
+    const elMax=document.getElementById('modal-nivel-max');
+    if(elMin){elMin.classList.add('input-error');elMin.addEventListener('input',()=>elMin.classList.remove('input-error'),{once:true});}
+    if(elMax){elMax.classList.add('input-error');elMax.addEventListener('input',()=>elMax.classList.remove('input-error'),{once:true});}
+    showToast('Nível mínimo não pode ser maior que o máximo.'); return; }
   const missing=[];
   if(!via)missing.push('Via Cega');
   if(!forn)missing.push('Fornecedor');
@@ -1005,6 +1105,20 @@ function criarNovaTarefa(prod, reg) {
     restante -= pegar;
   }
   const totalAlocados = reg.paletes - restante;
+  // Se nenhum endereço foi alocado, avisa o usuário antes de criar tarefa "morta"
+  if(totalAlocados===0){
+    const seguir=confirm(
+      `Não foi possível alocar nenhum endereço para esta via:\n\n`+
+      `• Linha: ${linhaDescricao}\n`+
+      `• Níveis: ${reg.nivelMin} a ${reg.nivelMax}\n`+
+      `• Paletes: ${reg.paletes}\n\n`+
+      `Possíveis causas:\n`+
+      `- Todos os endereços da(s) rua(s) estão ocupados ou reservados\n`+
+      `- A rua para esta linha ainda não foi configurada\n\n`+
+      `Deseja criar a tarefa mesmo assim? Você poderá usar "🔄 Tentar alocar novamente" depois.`
+    );
+    if(!seguir)return;
+  }
   const createdAt = Date.now();
   const task = {
     id: taskIdCounter,
@@ -1043,12 +1157,64 @@ function confirmarTarefa(taskId){
 }
 
 function cancelarTarefa(taskId){
-  if(!confirm('Cancelar este endereçamento?')) return;
-  tarefasAtivas = tarefasAtivas.filter(t => t.id !== taskId);
+  const task=tarefasAtivas.find(t=>t.id===taskId);
+  if(!task)return;
+  const totalEnderecos=task.alocacao.reduce((s,a)=>s+a.enderecos.length,0);
+  const msg=totalEnderecos>0
+    ? `Cancelar este endereçamento?\n\nIsso vai liberar ${totalEnderecos} endereço(s) alocado(s) para esta via.`
+    : 'Cancelar este endereçamento?';
+  if(!confirm(msg))return;
+  tarefasAtivas=tarefasAtivas.filter(t=>t.id!==taskId);
   atualizarReservedAddresses();
   renderActiveTasks();
   salvarDados();
   showToast('Tarefa cancelada.');
+}
+
+// Realoca os endereços de uma tarefa sem mexer em seus dados originais (via, paletes, etc.)
+// Útil quando a tarefa foi criada antes de Rua/configuração estar disponível, ou quando
+// endereços foram liberados depois e queremos reaproveitar a tarefa "morta".
+function realocarTarefa(taskId){
+  const task=tarefasAtivas.find(t=>t.id===taskId);
+  if(!task){showToast('Tarefa não encontrada.');return;}
+  // Re-resolve as ruas válidas (config pode ter mudado desde a criação)
+  const ruasValidas=RUAS.filter(r=>{
+    const linhas=ruaLinhaMap[r];
+    if(!linhas)return false;
+    return (Array.isArray(linhas)?linhas:[linhas]).includes(task.prod.linha1);
+  });
+  if(!ruasValidas.length){
+    showToast(`Nenhuma rua configurada para a linha ${task.prod.descLinha1}. Configure na aba Configuração.`);
+    return;
+  }
+  // Reservas excluindo a própria tarefa
+  const reservedKeys=new Set(
+    tarefasAtivas.filter(t=>t.id!==task.id).flatMap(t=>t.alocacao.flatMap(a=>a.enderecos.map(e=>e.key)))
+  );
+  const grupos=coletarEnderecosPorPredioTx(ruasValidas,task.reg.nivelMin,task.reg.nivelMax,reservedKeys,finalizedAddressesSet);
+  let restante=task.reg.paletes;
+  const alocacao=[];
+  for(let grupo of grupos){
+    if(restante<=0)break;
+    const pegar=Math.min(grupo.enderecos.length,restante);
+    alocacao.push({rua:grupo.rua,enderecos:grupo.enderecos.slice(0,pegar),alocados:pegar,totalDisponivel:grupo.enderecos.length});
+    restante-=pegar;
+  }
+  const novosAlocados=task.reg.paletes-restante;
+  if(novosAlocados===0){
+    showToast(`Ainda não há endereços disponíveis para ${task.prod.descLinha1} (níveis ${task.reg.nivelMin}–${task.reg.nivelMax}).`);
+    return;
+  }
+  task.alocacao=alocacao;
+  task.totalAlocados=novosAlocados;
+  task.faltam=restante;
+  task.ruasValidas=ruasValidas;
+  // Força re-render limpando o cache de diff
+  _lastActiveHTML='';
+  atualizarReservedAddresses();
+  renderActiveTasks();
+  salvarDados();
+  showToast(`✅ ${novosAlocados} endereço(s) alocado(s)${restante>0?` — ainda faltam ${restante}.`:'.'}`);
 }
 
 function excluirTarefaFinalizada(taskId){
@@ -1106,17 +1272,26 @@ function imprimirTarefa(task){
   pw.document.write(`<!DOCTYPE html><html><head><title>Armazenagem Via ${reg.via}</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap"><style>body{margin:20px;}tr:nth-child(even){background:#f7f8fa;}th,td{border:1px solid #e0e3e8;}</style></head><body>${printHtml}<script>window.onload=()=>window.print()<\/script></body></html>`);
   pw.document.close();
 }
+var _lastActiveHTML='';
 function renderActiveTasks(){
   const container=document.getElementById('tasks-ativas-container');
   if(!container)return;
-  if(tarefasAtivas.length===0){container.innerHTML='<div class="empty"><div class="empty-ico">📭</div><p>Nenhuma via cega em andamento.</p></div>'; return;}
+  if(tarefasAtivas.length===0){
+    var emptyHtml='<div class="empty"><div class="empty-ico">📭</div><p>Nenhuma via cega em andamento.</p></div>';
+    if(container.innerHTML!==emptyHtml)container.innerHTML=emptyHtml;
+    _lastActiveHTML=emptyHtml;
+    const elConf=document.getElementById('kpi-conflitos');if(elConf)elConf.textContent=0;
+    const elAtivas=document.getElementById('kpi-ativas');if(elAtivas)elAtivas.textContent=0;
+    const badge=document.getElementById('badge-ativas');if(badge){badge.textContent=0;badge.style.display='none';}
+    return;
+  }
   const keyTaskMap={};
   tarefasAtivas.forEach(t=>{t.alocacao.forEach(a=>a.enderecos.forEach(e=>{if(!keyTaskMap[e.key])keyTaskMap[e.key]=[];keyTaskMap[e.key].push(t.id);}));});
   const conflictKeys=new Set(Object.keys(keyTaskMap).filter(k=>keyTaskMap[k].length>1));
   const elConf=document.getElementById('kpi-conflitos');if(elConf)elConf.textContent=conflictKeys.size;
   const elAtivas=document.getElementById('kpi-ativas');if(elAtivas)elAtivas.textContent=tarefasAtivas.length;
   const badge=document.getElementById('badge-ativas');if(badge){badge.textContent=tarefasAtivas.length; badge.style.display=tarefasAtivas.length>0?'inline-block':'none';}
-  container.innerHTML=tarefasAtivas.map(task=>{
+  var newHtml=tarefasAtivas.map(task=>{
     const{id,prod,reg,alocacao,totalAlocados,faltam,createdAt,createdBy}=task;
     const minimized = getVisual(id,'minimized',false); // #4: estado visual local
     const elapsed=Math.floor((Date.now()-createdAt)/1000);
@@ -1126,7 +1301,7 @@ function renderActiveTasks(){
     const taskConflicts=alocacao.flatMap(a=>a.enderecos).filter(e=>conflictKeys.has(e.key)).length;
     const conflictWarnHtml=taskConflicts>0?`<div class="conflict-warn">⚠️ ${taskConflicts} endereço(s) em conflito com outra tarefa ativa</div>`:'';
     let bodyHtml=`<div class="task-body ${minimized?'minimized':''}" id="task-body-${id}"><div class="prod-bar"><div class="prod-bar-cod">${prod.cod}</div><div class="prod-bar-name">${prod.desc}</div><div class="prod-tags"><span class="prod-tag">Linha ${prod.descLinha1}</span><span class="prod-tag green">Níveis: ${reg.nivelMin} a ${reg.nivelMax}</span></div></div>${conflictWarnHtml}<div class="res-hdr" style="padding:0 16px;margin-top:12px"><div><div class="res-ttl">Endereços sugeridos</div><div class="res-sub">${reg.paletes} palete(s)</div></div><span class="badge ${totalAlocados===reg.paletes?'green':'red'}">${totalAlocados}/${reg.paletes}</span></div>`;
-    if(totalAlocados===0){bodyHtml+=`<div class="empty"><div class="empty-ico">😔</div><p>Sem endereços disponíveis para esta linha com nível entre ${reg.nivelMin} e ${reg.nivelMax}.</p></div>`;}
+    if(totalAlocados===0){bodyHtml+=`<div class="empty"><div class="empty-ico">😔</div><p>Sem endereços disponíveis para esta linha com nível entre ${reg.nivelMin} e ${reg.nivelMax}.</p><button class="action-btn confirm" style="margin-top:12px;max-width:240px;margin-left:auto;margin-right:auto;" onclick="realocarTarefa(${id})">🔄 Tentar alocar novamente</button></div>`;}
     else{
       for(let aloc of alocacao){
         const rua=aloc.rua;
@@ -1145,7 +1320,10 @@ function renderActiveTasks(){
     const criadoPor = createdBy ? `<span style="font-size:9px;color:var(--muted2);margin-left:4px">por ${escapeHtml(createdBy)}</span>` : '';
     return `<div class="task-card ${cardClass}" id="tc-${id}"><div class="task-header" onclick="toggleMinimize(${id})"><div class="task-header-left"><span class="task-badge">Via C: ${reg.via}</span><span class="task-title">${reg.forn} - ${reg.emp}</span>${criadoPor}<span class="task-timer ${timerClass}" id="timer-${id}">${timerDisplay}</span></div><div class="task-header-right"><span class="task-toggle-icon">${toggleIcon}</span></div></div>${bodyHtml}</div>`;
   }).join('');
+  // DIFF: só substitui o DOM se o conteúdo realmente mudou (evita flicker e reflow)
+  if(newHtml!==_lastActiveHTML){container.innerHTML=newHtml;_lastActiveHTML=newHtml;}
 }
+var _lastCompletedHTML='';
 function renderCompletedTasks(){
   const container=document.getElementById('tasks-finalizadas-container');
   if(!container)return;
@@ -1186,8 +1364,13 @@ function renderCompletedTasks(){
   filtered.forEach(t=>{const key=t.reg.mat; if(!empStats[key])empStats[key]={nome:t.reg.emp,mat:t.reg.mat,count:0,totalSecs:0,totalPaletes:0}; empStats[key].count++; empStats[key].totalSecs+=t.totalSeconds||0; empStats[key].totalPaletes+=t.totalAlocados;});
   const empGrid=document.getElementById('emp-stats-grid');
   if(empGrid)empGrid.innerHTML=Object.values(empStats).length===0?'<div style="font-size:12px;color:var(--muted)">Nenhuma tarefa finalizada</div>':Object.values(empStats).sort((a,b)=>b.count-a.count).map(e=>`<div class="emp-stat-card"><div class="emp-stat-name">${escapeHtml(e.nome)}</div><div class="emp-stat-mat">Mat. ${escapeHtml(e.mat)}</div><div class="emp-stat-row"><span class="emp-stat-lbl">Tarefas</span><span class="emp-stat-val">${e.count}</span></div><div class="emp-stat-row"><span class="emp-stat-lbl">Paletes</span><span class="emp-stat-val">${e.totalPaletes}</span></div><div class="emp-stat-row"><span class="emp-stat-lbl">Tempo médio</span><span class="emp-stat-val">${formatTime(Math.floor(e.totalSecs/e.count))}</span></div></div>`).join('');
-  if(filtered.length===0){container.innerHTML='<div class="empty"><div class="empty-ico">✅</div><p>Nenhuma armazenagem finalizada.</p></div>'; return;}
-  container.innerHTML=filtered.map(task=>{
+  if(filtered.length===0){
+    var emptyFin='<div class="empty"><div class="empty-ico">✅</div><p>Nenhuma armazenagem finalizada.</p></div>';
+    if(container.innerHTML!==emptyFin)container.innerHTML=emptyFin;
+    _lastCompletedHTML=emptyFin;
+    return;
+  }
+  var newHtml=filtered.map(task=>{
     const{id,prod,reg,alocacao,totalAlocados,totalSeconds,finishedAt,createdBy}=task;
     const expanded = getVisual(id,'expanded',false); // #4: estado visual local
     const timerDisplay=formatTime(totalSeconds);
@@ -1208,6 +1391,8 @@ function renderCompletedTasks(){
     const toggleIcon=expanded?'▲':'▼';
     return `<div class="task-card completed"><div class="task-header" onclick="toggleExpand(${id})"><div class="task-header-left"><span class="task-badge">Via C: ${reg.via}</span><span class="task-title">${reg.forn} - ${reg.emp}</span>${criadoPor}<span class="task-timer" id="timer-${id}" style="background:var(--fc-green-bg);color:var(--fc-green)">${timerDisplay}</span></div><div class="task-header-right"><span style="font-size:10px;color:var(--muted2)">${finHora}</span><span class="task-toggle-icon">${toggleIcon}</span></div></div>${bodyHtml}</div>`;
   }).join('');
+  // DIFF: só substitui o DOM se o conteúdo realmente mudou
+  if(newHtml!==_lastCompletedHTML){container.innerHTML=newHtml;_lastCompletedHTML=newHtml;}
 }
 function imprimirTarefaPorId(id,isActive){const task=isActive?tarefasAtivas.find(t=>t.id===id):tarefasFinalizadas.find(t=>t.id===id); if(task)imprimirTarefa(task);}
 function exportarFinalizadas(){
