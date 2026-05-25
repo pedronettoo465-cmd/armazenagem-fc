@@ -586,7 +586,7 @@ function salvarDados() {
 }
 
 function _executarSave() {
-  var temDados=tarefasAtivas.length>0||tarefasFinalizadas.length>0||taskIdCounter>0||finalizedAddressesSet.size>0;
+  var temDados=tarefasAtivas.length>0||tarefasFinalizadas.length>0||taskIdCounter>0||finalizedAddressesSet.size>0||Object.keys(cdLayout).length>0;
   if(!temDados)return;
   if(tarefasFinalizadas.length>MAX_FINALIZADAS)tarefasFinalizadas=tarefasFinalizadas.slice(-MAX_FINALIZADAS);
   var now=Date.now();
@@ -595,6 +595,13 @@ function _executarSave() {
   var payload={tarefasAtivas:tarefasAtivas,tarefasFinalizadas:tarefasFinalizadas,taskIdCounter:taskIdCounter,
     fornecedoresManuais:fornecedoresManuais,finalizedAddressesSet:Array.from(finalizedAddressesSet),updatedAt:now};
   if(Object.keys(ruaLinhaMap).length>0){payload.ruaLinhaMap=ruaLinhaMap;payload.tiposRua=tiposRua;}
+  // Sincroniza o layout do CD e ocupação (vem da planilha) — assim todas as máquinas veem o mesmo CD
+  if(Object.keys(cdLayout).length>0){
+    payload.cdLayoutKeys=Object.keys(cdLayout);
+    payload.occupiedKeys=Array.from(occupiedSet);
+    payload.linhasMap=linhasMap;
+    payload.planilhaHash=planilhaHash;
+  }
   sbGravar(payload)
     .then(function(){sbSetStatus('online');_pollingFailCount=0;_pollingDelay=5000;})
     .catch(function(){sbSetStatus('offline');});
@@ -611,6 +618,28 @@ function aplicarSnapshot(data, forcado) {
   finalizedAddressesSet=new Set(data.finalizedAddressesSet||[]);
   if(data.ruaLinhaMap){ruaLinhaMap=data.ruaLinhaMap;localStorage.setItem('fc_arm_config',JSON.stringify(ruaLinhaMap));}
   if(data.tiposRua){tiposRua=data.tiposRua;localStorage.setItem('fc_arm_tipos_rua',JSON.stringify(tiposRua));}
+  // Reconstrói cdLayout/occupiedSet a partir do Supabase — só se a máquina local não tiver dados próprios mais novos
+  // Critério: só substitui se o local está vazio OU se a planilha remota é mais recente que a local
+  if(data.cdLayoutKeys && data.cdLayoutKeys.length > 0){
+    var remotoHash = data.planilhaHash || '';
+    var localTemCdLayout = Object.keys(cdLayout).length > 0;
+    // Se local está vazio, sempre aceita o remoto
+    // Se local tem dados mas hashes diferem, prefere o remoto (foi atualizado por outra máquina)
+    if(!localTemCdLayout || (remotoHash && remotoHash !== planilhaHash)){
+      cdLayout = {};
+      data.cdLayoutKeys.forEach(function(k){ cdLayout[k] = true; });
+      occupiedSet = new Set(data.occupiedKeys || []);
+      if(data.linhasMap) linhasMap = data.linhasMap;
+      if(remotoHash) planilhaHash = remotoHash;
+      // Salva no localStorage para persistir entre recarregamentos
+      try {
+        localStorage.setItem('fc_arm_cdlayout', JSON.stringify(data.cdLayoutKeys));
+        localStorage.setItem('fc_arm_occupied', JSON.stringify(data.occupiedKeys || []));
+        localStorage.setItem('fc_arm_linhasMap', JSON.stringify(linhasMap));
+        if(remotoHash) localStorage.setItem('fc_arm_planilha_hash', remotoHash);
+      } catch(e){}
+    }
+  }
   // Atualiza cache local sempre que recebe novos dados
   try {
     localStorage.setItem('fc_arm_cache',JSON.stringify({
@@ -661,7 +690,25 @@ function carregarDados() {
   var savedTipos=localStorage.getItem('fc_arm_tipos_rua');
   if(savedHash)planilhaHash=savedHash;
   if(savedTipos)tiposRua=JSON.parse(savedTipos);
-  // Carrega cache local primeiro para mostrar tela instantaneamente
+  // FIX: Restaura cdLayout, occupiedSet e linhasMap do localStorage
+  // Antes, esses dados ficavam só em memória e se perdiam ao recarregar a página
+  try {
+    var cachedCdLayout = localStorage.getItem('fc_arm_cdlayout');
+    var cachedOccupied = localStorage.getItem('fc_arm_occupied');
+    var cachedLinhasMap = localStorage.getItem('fc_arm_linhasMap');
+    if(cachedCdLayout){
+      var keys = JSON.parse(cachedCdLayout);
+      cdLayout = {};
+      keys.forEach(function(k){ cdLayout[k] = true; });
+    }
+    if(cachedOccupied){
+      occupiedSet = new Set(JSON.parse(cachedOccupied));
+    }
+    if(cachedLinhasMap){
+      linhasMap = JSON.parse(cachedLinhasMap);
+    }
+  } catch(e){ console.warn('Erro ao restaurar cache do layout',e); }
+  // Carrega cache local de tarefas para mostrar tela instantaneamente
   try {
     var cache=localStorage.getItem('fc_arm_cache');
     if(cache){
@@ -761,6 +808,13 @@ function processar(){
           salvarDados();
         }
         planilhaHash = novoHash;
+        // FIX: Persiste cdLayout/occupiedSet/linhasMap no localStorage para não perder ao recarregar
+        try {
+          localStorage.setItem('fc_arm_cdlayout', JSON.stringify(Object.keys(cdLayout)));
+          localStorage.setItem('fc_arm_occupied', JSON.stringify(Array.from(occupiedSet)));
+          localStorage.setItem('fc_arm_linhasMap', JSON.stringify(linhasMap));
+          localStorage.setItem('fc_arm_planilha_hash', planilhaHash);
+        } catch(e){ console.warn('Erro ao persistir layout no localStorage',e); }
         salvarDados();
         const subEl=document.getElementById('file-sub');
         if(subEl)subEl.textContent=`${rawRows.length.toLocaleString('pt-BR')} registros · ${Object.keys(linhasMap).length} linhas · ${Object.keys(cdLayout).length.toLocaleString('pt-BR')} posições mapeadas`;
@@ -1126,6 +1180,17 @@ function cancelarTarefa(taskId){
 function realocarTarefa(taskId){
   const task=tarefasAtivas.find(t=>t.id===taskId);
   if(!task){showToast('Tarefa não encontrada.');return;}
+  // FIX: Detecta máquina sem planilha — não dá para alocar sem cdLayout
+  if(Object.keys(cdLayout).length === 0){
+    alert(
+      `⚠️ Esta máquina não tem o layout do CD carregado.\n\n`+
+      `Antes de alocar endereços, é necessário:\n\n`+
+      `1. Ir até a aba "Planilha"\n`+
+      `2. Importar a planilha de Detalhamento do CD\n\n`+
+      `Ou, se outra máquina já importou a planilha, aguarde alguns segundos para a sincronização automática completar e tente novamente.`
+    );
+    return;
+  }
   // Re-resolve as ruas válidas (config pode ter mudado desde a criação)
   const ruasValidas=RUAS.filter(r=>{
     const linhas=ruaLinhaMap[r];
