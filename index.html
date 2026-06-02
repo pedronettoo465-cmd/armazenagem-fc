@@ -299,6 +299,7 @@ input[readonly] { background-color: var(--surface3); cursor: default; color: var
   <button class="tab-btn" id="tab-btn-finalizadas" onclick="showTab('finalizadas')">✅ Finalizadas</button>
   <button class="tab-btn" id="tab-btn-mapa" onclick="showTab('mapa')">🗺️ Mapa do CD</button>
   <button class="tab-btn" id="tab-btn-layout" onclick="showTab('layout')">🔥 Layoutização</button>
+  <button class="tab-btn" id="tab-btn-auditoria" onclick="showTab('auditoria')">🔎 Auditoria</button>
 </div>
 
 <div id="view-upload" class="wrapper"><div class="card"><div class="card-hdr"><div class="card-ico red">📋</div><div><div class="card-ttl">Planilha de Endereços</div><div class="card-sub">Detalhamento WMS · Endereços ocupados do CD</div></div></div><div class="card-body"><div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="onDrop(event)"><input type="file" id="file-input" accept=".xlsx,.xls" onchange="handleFile(this)"><div class="dz-icon">📂</div><p>Toque para selecionar ou arraste<br><strong>a planilha de Detalhamento</strong></p></div><div id="file-info" style="display:none" class="file-ok"><span style="font-size:20px">✅</span><div><div class="file-ok-name" id="file-name"></div><div class="file-ok-sub" id="file-sub"></div></div></div><div style="margin-top:12px"><button class="btn btn-red" id="btn-processar" onclick="processar()" disabled>⚡ Processar Planilha</button></div></div></div></div>
@@ -406,6 +407,76 @@ input[readonly] { background-color: var(--surface3); cursor: default; color: var
   <div id="lay-tooltip" style="position:fixed;display:none;background:#1e293b;color:#fff;font-size:11px;font-weight:500;padding:10px 14px;border-radius:10px;pointer-events:none;z-index:5000;line-height:1.7;max-width:260px;box-shadow:0 4px 20px rgba(0,0,0,.3);"></div>
 </div>
 
+
+<!-- AUDITORIA DE VIAS CEGAS -->
+<div id="view-auditoria" style="display:none;padding:16px;max-width:960px;margin:0 auto;">
+
+  <!-- Importar planilhas -->
+  <div class="card" style="margin-bottom:14px;">
+    <div class="card-hdr">
+      <div class="card-ico" style="background:rgba(124,58,237,.1)">📋</div>
+      <div><div class="card-ttl">Planilhas para Auditoria</div><div class="card-sub">Importe a planilha de Vias Cegas e a de Endereços para habilitar a auditoria completa</div></div>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;flex-wrap:wrap;">
+        <!-- Via Cega -->
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--muted2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">📦 Via Cega</div>
+          <div class="drop-zone" id="drop-zone-vc" onclick="document.getElementById('file-input-vc').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="onDropVC(event)" style="min-height:70px;padding:12px;">
+            <input type="file" id="file-input-vc" accept=".xlsx,.xls" onchange="handleFileVC(this)">
+            <div class="dz-icon" style="font-size:18px">📋</div>
+            <p style="font-size:11px;margin:4px 0 0;">Arraste ou clique</p>
+          </div>
+          <div id="file-info-vc" style="display:none" class="file-ok">
+            <span style="font-size:16px">✅</span>
+            <div style="flex:1"><div class="file-ok-name" id="file-name-vc" style="font-size:11px;"></div><div class="file-ok-sub" id="file-sub-vc" style="font-size:10px;"></div></div>
+            <button onclick="trocarArquivoVC()" style="background:none;border:none;font-size:11px;color:var(--muted2);cursor:pointer;text-decoration:underline;flex-shrink:0;">Trocar</button>
+          </div>
+          <button class="btn btn-red" id="btn-processar-vc" onclick="processarVC()" disabled style="width:100%;margin-top:8px;font-size:12px;">⚡ Processar</button>
+        </div>
+        <!-- Endereços -->
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--muted2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">📍 Endereços</div>
+          <div class="drop-zone" id="drop-zone-end" onclick="document.getElementById('file-input-end').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="onDropEnd(event)" style="min-height:70px;padding:12px;">
+            <input type="file" id="file-input-end" accept=".xlsx,.xls" onchange="handleFileEnd(this)">
+            <div class="dz-icon" style="font-size:18px">📍</div>
+            <p style="font-size:11px;margin:4px 0 0;">Arraste ou clique</p>
+          </div>
+          <div id="file-info-end" style="display:none" class="file-ok">
+            <span style="font-size:16px">✅</span>
+            <div style="flex:1"><div class="file-ok-name" id="file-name-end" style="font-size:11px;"></div><div class="file-ok-sub" id="file-sub-end" style="font-size:10px;"></div></div>
+            <button onclick="trocarArquivoEnd()" style="background:none;border:none;font-size:11px;color:var(--muted2);cursor:pointer;text-decoration:underline;flex-shrink:0;">Trocar</button>
+          </div>
+          <button class="btn btn-red" id="btn-processar-end" onclick="processarEndAuditoria()" disabled style="width:100%;margin-top:8px;font-size:12px;">⚡ Processar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista automática de todas as vias das ordens -->
+  <div id="auditoria-lista-container"></div>
+</div>
+
+<!-- MODAL AUDITORIA DETALHES -->
+<div class="modal-overlay" id="modal-auditoria">
+  <div class="modal-box" style="max-width:700px;width:95vw;">
+    <div class="modal-header">
+      <div class="modal-header-ico">🔎</div>
+      <div>
+        <div class="modal-header-title" id="modal-auditoria-title">Detalhes da Via Cega</div>
+        <div class="modal-header-sub" id="modal-auditoria-sub">—</div>
+      </div>
+    </div>
+    <div class="modal-body" style="padding:0;max-height:65vh;overflow-y:auto;">
+      <div id="modal-auditoria-body" style="padding:16px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn-cancel" onclick="exportarAuditoriaExcel()" style="background:var(--fc-green);color:#fff;border:none;">📥 Exportar Excel</button>
+      <button class="modal-btn-cancel" onclick="document.getElementById('modal-auditoria').classList.remove('open')">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <div class="loader-overlay" id="loader"><div class="loader-spinner"></div><div class="loader-txt">Processando planilha...</div></div>
 <div class="toast" id="toast"></div>
 
@@ -450,6 +521,24 @@ let reservedAddresses = new Set();
 let finalizedAddressesSet = new Set();
 // Fingerprint da última planilha importada (para detectar troca de planilha)
 let planilhaHash = '';
+
+// ================== ESTADO VIAS CEGAS ==================
+let rawRowsVC = []; // linhas brutas da planilha de vias cegas
+let viaCegaMap = new Map(); // chave "nrVCega|codEmpresa" → [{ nrVCega, codEmpresa, mascUMA }]
+let viasUnicas = []; // lista de strings "nrVCega|codEmpresa" únicas
+
+// Dropdown flutuante para vias cegas (modal e auditoria)
+let vcDropdownModal = null, vcDropdownAuditoria = null;
+let vcDropdownModalOpen = false, vcDropdownAuditoriaOpen = false;
+
+function converterCodEmpresa(estoqProprietario) {
+  const ep = String(estoqProprietario).trim();
+  if (ep === '21') return '80';
+  if (ep === '81') return '92';
+  if (['61','101','121','141'].includes(ep)) return '81';
+  return ep; // mantém original para outros valores
+}
+
 
 // Fix #4: IDs já notificados sobrevivem ao aplicarSnapshot (não ficam no objeto de task)
 const _tarefasNotificadas40 = new Set();
@@ -613,6 +702,9 @@ function iniciarPolling() {
 }
 
 function carregarDados() {
+  carregarDadosVC();
+  carregarEndAuditoria();
+  // será reconstruído após carregar detalhamento
   var savedHash=localStorage.getItem('fc_arm_planilha_hash');
   var savedTipos=localStorage.getItem('fc_arm_tipos_rua');
   if(savedHash)planilhaHash=savedHash;
@@ -720,9 +812,13 @@ function processar(){
         salvarDados();
         const subEl=document.getElementById('file-sub');
         if(subEl)subEl.textContent=`${rawRows.length.toLocaleString('pt-BR')} registros · ${Object.keys(linhasMap).length} linhas · ${Object.keys(cdLayout).length.toLocaleString('pt-BR')} posições mapeadas`;
+        // Reconstrói vínculo UMA-via com o novo detalhamento
+        if(viasUnicas.length>0) reconstruirViaCegaMapFromDetalhamento();
         showLoader(false);
         showTabs();
         showToast(planilhaMudou ? '🔄 Nova planilha detectada — endereços reconciliados!' : '✅ Planilha processada com sucesso!');
+        // Reconstrói vínculo UMA-Via a partir do novo detalhamento
+        if(viasUnicas.length>0){reconstruirViaCegaMapFromDetalhamento();}
       }catch(err){showLoader(false);alert('Erro: '+err.message);}
     },50);
   };
@@ -805,7 +901,7 @@ function resetToDefault(){if(!confirm('Restaurar layout padrão?'))return; local
 function renderTiposRua(){const grid=document.getElementById('tipos-rua-grid'); if(!grid)return; const tipos=['porta_palete','blocado','stage']; grid.innerHTML=RUAS.map(rua=>{const atual=tiposRua[rua]||'porta_palete'; return `<div class="rua-item" style="margin-bottom:8px"><div class="rua-hdr"><span class="rua-num">RUA ${rua}</span></div><select id="tipo-${rua}" class="tipo-rua-select">${tipos.map(t=>`<option value="${t}" ${atual===t?'selected':''}>${t==='porta_palete'?'Porta Palete':t==='blocado'?'Blocado Dinâmico':'Stage'}</option>`).join('')}</select></div>`;}).join('');}
 function salvarTiposRua(){RUAS.forEach(rua=>{const sel=document.getElementById(`tipo-${rua}`); if(sel)tiposRua[rua]=sel.value;}); salvarDados(); showToast('Tipos de rua salvos!');}
 function showTabs(){const nav=document.getElementById('tab-nav');if(nav)nav.style.display='flex'; showTab('ativas');}
-function showTab(tab){['upload','config','tipos','ativas','finalizadas','mapa','layout'].forEach(t=>{const view=document.getElementById(`view-${t}`);if(view)view.style.display=t===tab?'':'none'; const btn=document.getElementById(`tab-btn-${t}`);if(btn)btn.classList.toggle('active',t===tab);}); if(tab==='ativas')renderActiveTasks(); if(tab==='finalizadas')renderCompletedTasks(); if(tab==='mapa')renderMapa(); if(tab==='layout')renderLayout();}
+function showTab(tab){['upload','config','tipos','ativas','finalizadas','mapa','layout','auditoria'].forEach(t=>{const view=document.getElementById(`view-${t}`);if(view)view.style.display=t===tab?'':'none'; const btn=document.getElementById(`tab-btn-${t}`);if(btn)btn.classList.toggle('active',t===tab);}); if(tab==='ativas')renderActiveTasks(); if(tab==='finalizadas')renderCompletedTasks(); if(tab==='mapa')renderMapa(); if(tab==='layout')renderLayout(); if(tab==='auditoria')renderAuditoria();}
 
 // ================== COMBOBOX FORNECEDORES ==================
 let floatingDropdown=null, isDropdownOpen=false;
@@ -907,6 +1003,730 @@ function confirmModal(){
     criarNovaTarefa(_pendingProd,regData);
   }
   closeModal();
+}
+
+
+// ================== PLANILHA DE VIAS CEGAS ==================
+let _rawFileVC = null;
+
+function handleFileVC(input) {
+  const file = input.files[0]; if (!file) return;
+  _rawFileVC = file;
+  document.getElementById('file-name-vc').textContent = file.name;
+  document.getElementById('file-sub-vc').textContent = (file.size/1024).toFixed(1) + ' KB';
+  document.getElementById('file-info-vc').style.display = 'flex';
+  document.getElementById('drop-zone-vc').style.display = 'none';
+  document.getElementById('btn-processar-vc').disabled = false;
+}
+
+function trocarArquivoVC() {
+  // Reseta o estado visual e permite selecionar novo arquivo
+  document.getElementById('file-info-vc').style.display = 'none';
+  document.getElementById('drop-zone-vc').style.display = '';
+  document.getElementById('btn-processar-vc').disabled = true;
+  // Limpa o input para permitir selecionar o mesmo arquivo novamente
+  document.getElementById('file-input-vc').value = '';
+  _rawFileVC = null;
+}
+
+function trocarArquivoEnd() {
+  document.getElementById('file-info-end').style.display = 'none';
+  document.getElementById('drop-zone-end').style.display = '';
+  document.getElementById('btn-processar-end').disabled = true;
+  document.getElementById('file-input-end').value = '';
+  _rawFileEnd = null;
+}
+
+function onDropVC(e) {
+  e.preventDefault(); e.currentTarget.classList.remove('drag');
+  const file = e.dataTransfer.files[0]; if (!file) return;
+  const input = document.getElementById('file-input-vc');
+  const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files;
+  handleFileVC(input);
+}
+
+function processarVC() {
+  if (!_rawFileVC) return;
+  showLoader(true);
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'binary' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      // A planilha tem 2 linhas de lixo antes do cabeçalho real (linha 3)
+      // Usamos sheet_to_json com header:1 para pegar todas as linhas e
+      // detectar automaticamente onde começa o header real
+      const allRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+      // Encontra a linha do cabeçalho real procurando por "VIA CEGA" ou "COD EMPRESA"
+      let headerIdx = -1;
+      for (let i = 0; i < Math.min(10, allRows.length); i++) {
+        const rowStr = allRows[i].join('|').toUpperCase();
+        if (rowStr.includes('VIA CEGA') || rowStr.includes('COD EMPRESA')) {
+          headerIdx = i;
+          break;
+        }
+      }
+      if (headerIdx === -1) throw new Error('Cabeçalho não encontrado. Verifique se é a planilha correta de Vias Cegas.');
+
+      const headers = allRows[headerIdx].map(h => String(h).trim());
+      const idxVia = headers.findIndex(h => h.toUpperCase().includes('VIA CEGA'));
+      const idxCod = headers.findIndex(h => h.toUpperCase().includes('COD EMPRESA') || h.toUpperCase().includes('CÓD EMPRESA') || h.toUpperCase().includes('COD_EMPRESA'));
+      if (idxVia === -1) throw new Error('Coluna "VIA CEGA" não encontrada na planilha.');
+      if (idxCod === -1) throw new Error('Coluna "COD EMPRESA" não encontrada na planilha.');
+
+      rawRowsVC = [];
+      viaCegaMap.clear();
+      viasUnicas = [];
+      const seenVias = new Set();
+
+      for (let i = headerIdx + 1; i < allRows.length; i++) {
+        const row = allRows[i];
+        const nr = String(row[idxVia] ?? '').trim();
+        const ep = String(row[idxCod] ?? '').trim();
+        if (!nr || !ep || nr === '' || ep === '') continue;
+        const cod = ep; // COD EMPRESA já está convertido na planilha de Via Cega (80, 92, 81...)
+        const chave = nr + '|' + cod;
+        rawRowsVC.push({ nrVCega: nr, codEmpresa: cod });
+        if (!seenVias.has(chave)) {
+          seenVias.add(chave);
+          viasUnicas.push({ nr, cod, chave });
+        }
+      }
+
+      viasUnicas.sort((a, b) => a.nr.localeCompare(b.nr, undefined, { numeric: true }));
+
+      // Reconstrói viaCegaMap cruzando com a planilha de endereços (rawRows)
+      // para associar UMAs às vias
+      reconstruirViaCegaMapFromDetalhamento();
+
+      const totalUmas = Array.from(viaCegaMap.values()).reduce((s, v) => s + v.length, 0);
+      localStorage.setItem('fc_arm_vc_data', JSON.stringify({ rawRowsVC, viasUnicasArr: viasUnicas }));
+      document.getElementById('file-sub-vc').textContent =
+        viasUnicas.length + ' vias únicas' + (rawRows.length > 0 ? ' · ' + totalUmas + ' UMAs vinculadas' : ' · importe o Detalhamento para ver UMAs');
+      showToast('✅ Planilha de vias cegas processada — ' + viasUnicas.length + ' vias únicas encontradas.');
+      renderAuditoria();
+    } catch(err) { showToast('Erro ao processar: ' + err.message); console.error(err); }
+    finally { showLoader(false); }
+  };
+  reader.readAsBinaryString(_rawFileVC);
+}
+
+function carregarDadosVC() {
+  try {
+    const saved = localStorage.getItem('fc_arm_vc_data');
+    if (!saved) return;
+    const data = JSON.parse(saved);
+    rawRowsVC = data.rawRowsVC || [];
+    viasUnicas = data.viasUnicasArr || [];
+    viaCegaMap.clear();
+    // UMAs são reconstruídas do detalhamento na hora
+  } catch(e) {}
+}
+
+// Detecta o nome exato de uma coluna no primeiro objeto de rawRows
+// buscando por substring case-insensitive sem acentos
+function detectarColuna(primeiroObj, ...termos) {
+  const chaves = Object.keys(primeiroObj);
+  for (const termo of termos) {
+    const t = termo.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const found = chaves.find(k => {
+      const kn = k.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      return kn === t || kn.includes(t);
+    });
+    if (found) return found;
+  }
+  return null;
+}
+
+// Reconstrói viaCegaMap usando rawRows (detalhamento) como fonte de UMAs
+// Chave: nrVCega|codEmpresa(convertido) → [{ nrVCega, codEmpresa, mascUMA }]
+function reconstruirViaCegaMapFromDetalhamento() {
+  viaCegaMap.clear();
+  if (!rawRows || !rawRows.length) return;
+
+  // Detecta nomes de colunas dinamicamente a partir do primeiro registro
+  const primeiro = rawRows[0];
+  const colNr  = detectarColuna(primeiro, 'nr vcega', 'nrvcega', 'nr_vcega', 'vcega');
+  const colEp  = detectarColuna(primeiro, 'estq. proprietario', 'estq proprietario', 'estoq. proprietario', 'estoq proprietario', 'proprietario');
+  const colUma = detectarColuna(primeiro, 'mascara uma', 'mascarauma', 'mascara_uma');
+
+  if (!colNr || !colEp || !colUma) {
+    console.warn('reconstruirViaCegaMap: colunas não encontradas', { colNr, colEp, colUma, chaves: Object.keys(primeiro) });
+    return;
+  }
+
+  // Constrói set de chaves válidas para filtragem rápida
+  const chavesValidas = viasUnicas.length
+    ? new Set(viasUnicas.map(v => v.chave))
+    : null;
+
+  // Usa Set intermediário para deduplicar UMAs por via (uma UMA pode ter múltiplas linhas no detalhamento)
+  const umasPorChave = new Map(); // chave → Set de mascUMAs únicas
+
+  for (const r of rawRows) {
+    const nr  = String(r[colNr]  ?? '').trim();
+    const ep  = String(r[colEp]  ?? '').trim();
+    const uma = String(r[colUma] ?? '').trim();
+    if (!nr || !ep || !uma) continue;
+    const cod   = converterCodEmpresa(ep);
+    const chave = nr + '|' + cod;
+    if (chavesValidas && !chavesValidas.has(chave)) continue;
+    if (!umasPorChave.has(chave)) umasPorChave.set(chave, new Set());
+    umasPorChave.get(chave).add(uma);
+  }
+
+  // Converte os Sets em arrays de objetos para viaCegaMap
+  for (const [chave, umasSet] of umasPorChave) {
+    const [nrVCega, codEmpresa] = chave.split('|');
+    viaCegaMap.set(chave, Array.from(umasSet).map(mascUMA => ({ nrVCega, codEmpresa, mascUMA })));
+  }
+
+  console.log('viaCegaMap reconstruído:', viaCegaMap.size, 'vias,', Array.from(viaCegaMap.values()).reduce((s,v)=>s+v.length,0), 'UMAs únicas');
+}
+
+function renderAuditoria() {
+  // Atualiza info das planilhas importadas
+  if (rawRowsVC.length > 0) {
+    const fi = document.getElementById('file-info-vc');
+    const dz = document.getElementById('drop-zone-vc');
+    const btn = document.getElementById('btn-processar-vc');
+    if (fi) fi.style.display = 'flex';
+    if (dz) dz.style.display = 'none';
+    if (btn) btn.disabled = false;
+    const nm = document.getElementById('file-name-vc');
+    if (nm && !nm.textContent) nm.textContent = 'Planilha carregada do cache';
+    const sub = document.getElementById('file-sub-vc');
+    if (sub) sub.textContent = rawRowsVC.length.toLocaleString('pt-BR') + ' registros · ' + viasUnicas.length + ' vias únicas';
+  }
+
+  const container = document.getElementById('auditoria-lista-container');
+  if (!container) return;
+
+  const viasAtivas = tarefasAtivas.map(t => ({ via: String(t.reg.via||'').trim(), status: 'ativo', tarefa: t }));
+  const viasFinalizadas = tarefasFinalizadas.map(t => ({ via: String(t.reg.via||'').trim(), status: 'finalizado', tarefa: t }));
+  const todasOrdens = [...viasAtivas, ...viasFinalizadas].filter(v => v.via);
+
+  if (!todasOrdens.length) {
+    container.innerHTML = '<div class="empty" style="padding:40px 0"><div class="empty-ico">📋</div><p>Nenhuma ordem de armazenagem encontrada.</p></div>';
+    return;
+  }
+
+  const umasByVia = (rawRowsEnd.length > 0) ? buildUMAsByViaFromEnd() : new Map();
+
+  const porVia = new Map();
+  for (const item of todasOrdens) {
+    if (!porVia.has(item.via)) porVia.set(item.via, { via: item.via, status: item.status, tarefas: [] });
+    porVia.get(item.via).tarefas.push(item.tarefa);
+    if (item.status === 'ativo') porVia.get(item.via).status = 'ativo';
+  }
+
+  const emAndamento = [], finalizadas = [];
+  for (const [, v] of porVia) {
+    if (v.status === 'ativo') emAndamento.push(v);
+    else finalizadas.push(v);
+  }
+
+  function buildCard(item) {
+    const { via, status, tarefas } = item;
+    const t = tarefas[0];
+    const forn = t.reg.forn || '—';
+    const emp  = t.reg.emp  || '—';
+    const paletesOrdem = t.reg.paletes || 0;
+
+    // Endereços sugeridos pela ordem (todas as tarefas desta via)
+    const endSugeridosSet = new Set();
+    for (const tarefa of tarefas) {
+      (tarefa.alocacao || []).forEach(aloc => {
+        (aloc.enderecos || []).forEach(e => endSugeridosSet.add(e.key));
+      });
+    }
+
+    // Busca chave da via no mapa (por nr da via, qualquer cod empresa)
+    let chaveEncontrada = '';
+    for (const [chave] of viaCegaMap) {
+      if (chave.startsWith(via + '|')) { chaveEncontrada = chave; break; }
+    }
+    if (!chaveEncontrada) {
+      for (const [chave] of umasByVia) {
+        if (chave.startsWith(via + '|')) { chaveEncontrada = chave; break; }
+      }
+    }
+
+    const umasVia = chaveEncontrada ? (umasByVia.get(chaveEncontrada) || []) : [];
+    const totalUMAs = umasVia.length;
+
+    // Categoriza cada UMA
+    let corretas = 0, incorretas = 0, pendentes = 0;
+    const listaCorretas = [], listaIncorretas = [], listaPendentes = [];
+
+    for (const u of umasVia) {
+      const statusUMA = u.status;
+      const endUMA = u.endereco || '';
+      if (statusUMA === 'Endereçada' && endUMA) {
+        // Normaliza o endereço da UMA para comparar com as chaves sugeridas
+        // Chave sugerida: "rua|predio|nivel|apto" — endereço no detalhamento: "01-086-008"
+        // Tenta comparar direto e também pelo formato da chave
+        const match = enderecoMatch(endUMA, endSugeridosSet);
+        if (match) { corretas++; listaCorretas.push(u); }
+        else { incorretas++; listaIncorretas.push(u); }
+      } else if (statusUMA !== 'Endereçada') {
+        pendentes++; listaPendentes.push(u);
+      } else {
+        // Endereçada mas sem endereço registrado — trata como pendente
+        pendentes++; listaPendentes.push(u);
+      }
+    }
+
+    // Divergência: paletes da ordem vs total de UMAs da via
+    const divergente = totalUMAs > 0 && paletesOrdem !== totalUMAs;
+
+    const badgeStatus = status === 'ativo'
+      ? '<span style="background:#fef3c7;color:#92400e;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;">⏳ EM ANDAMENTO</span>'
+      : '<span style="background:#dcfce7;color:#166534;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;">✅ FINALIZADA</span>';
+
+    const badgeDiverg = divergente
+      ? `<span style="background:#fee2e2;color:#991b1b;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;">⚠️ DIVERGENTE (${paletesOrdem} paletes × ${totalUMAs} UMAs)</span>`
+      : '';
+
+    const semDados = totalUMAs === 0;
+    const pct = semDados ? null : Math.round(((corretas + incorretas) / totalUMAs) * 100);
+    const corPct = pct === null ? 'var(--muted2)' : pct === 100 ? 'var(--fc-green)' : pct >= 50 ? 'var(--amber,#f59e0b)' : 'var(--fc-red)';
+
+    const barraHtml = semDados ? `<div style="font-size:11px;color:var(--muted2);margin:10px 0;">⚠️ Importe as planilhas de Vias Cegas e Endereços para ver o detalhamento das UMAs.</div>`
+      : `<div style="margin:10px 0 4px;">
+          <div style="background:var(--surface3);border-radius:99px;height:8px;overflow:hidden;position:relative;">
+            <div style="height:100%;width:${Math.round((corretas/totalUMAs)*100)}%;background:var(--fc-green);border-radius:99px 0 0 99px;display:inline-block;"></div><div style="height:100%;width:${Math.round((incorretas/totalUMAs)*100)}%;background:var(--amber,#f59e0b);display:inline-block;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted2);margin-top:3px;">
+            <span>✅ ${corretas} corretas</span><span style="color:var(--amber,#f59e0b);">⚠️ ${incorretas} incorretas</span><span style="color:var(--fc-red);">⏳ ${pendentes} pendentes</span><span style="font-weight:700;color:${corPct};">${pct}% end.</span>
+          </div>
+        </div>`;
+
+    const btns = semDados ? '' : `
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+        <button onclick="abrirModalAuditoria('${escapeHtml(chaveEncontrada)}','corretas')" style="background:var(--fc-green);color:#fff;border:none;border-radius:7px;padding:7px 13px;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">✅ ${corretas} corretas</button>
+        <button onclick="abrirModalAuditoria('${escapeHtml(chaveEncontrada)}','incorretas')" style="background:var(--amber,#f59e0b);color:#fff;border:none;border-radius:7px;padding:7px 13px;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">⚠️ ${incorretas} incorretas</button>
+        <button onclick="abrirModalAuditoria('${escapeHtml(chaveEncontrada)}','pendentes')" style="background:var(--fc-red);color:#fff;border:none;border-radius:7px;padding:7px 13px;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">⏳ ${pendentes} pendentes</button>
+        <button onclick="abrirModalAuditoria('${escapeHtml(chaveEncontrada)}','all')" style="background:var(--surface3);color:var(--text);border:1.5px solid var(--border2);border-radius:7px;padding:7px 13px;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">📋 Ver todas (${totalUMAs})</button>
+        <button onclick="exportarViaExcel('${escapeHtml(chaveEncontrada)}','${escapeHtml(via)}')" style="background:#166534;color:#fff;border:none;border-radius:7px;padding:7px 13px;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">📥 Excel</button>
+      </div>`;
+
+    return `<div class="card" style="margin-bottom:10px;">
+      <div class="card-body" style="padding:12px 14px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+              <span style="font-size:16px;font-weight:800;font-family:'DM Mono',monospace;">Via ${escapeHtml(via)}</span>
+              ${badgeStatus} ${badgeDiverg}
+            </div>
+            <div style="font-size:12px;color:var(--muted2);">🏢 ${escapeHtml(forn)} &nbsp;·&nbsp; 🏗️ ${escapeHtml(emp)}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            ${!semDados ? `<div style="font-size:26px;font-weight:800;color:${corPct};line-height:1;">${pct}%</div><div style="font-size:10px;color:var(--muted2);">${totalUMAs} UMAs · ${paletesOrdem} paletes</div>` : ''}
+          </div>
+        </div>
+        ${barraHtml}${btns}
+      </div>
+    </div>`;
+  }
+
+  let html = '';
+  if (emAndamento.length) {
+    html += `<div style="font-size:11px;font-weight:700;color:var(--muted2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;margin-top:4px;">⏳ Em Andamento (${emAndamento.length})</div>`;
+    html += emAndamento.map(buildCard).join('');
+  }
+  if (finalizadas.length) {
+    html += `<div style="font-size:11px;font-weight:700;color:var(--muted2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;margin-top:${emAndamento.length?16:4}px;">✅ Finalizadas (${finalizadas.length})</div>`;
+    html += finalizadas.map(buildCard).join('');
+  }
+  container.innerHTML = html;
+}
+
+// ================== ESTADO PLANILHA ENDEREÇOS AUDITORIA ==================
+let rawRowsEnd = []; // linhas brutas da planilha de endereços para auditoria
+let _rawFileEnd = null;
+
+function handleFileEnd(input) {
+  const file = input.files[0]; if (!file) return;
+  _rawFileEnd = file;
+  document.getElementById('file-name-end').textContent = file.name;
+  document.getElementById('file-sub-end').textContent = (file.size/1024).toFixed(1) + ' KB';
+  document.getElementById('file-info-end').style.display = 'flex';
+  document.getElementById('drop-zone-end').style.display = 'none';
+  document.getElementById('btn-processar-end').disabled = false;
+}
+
+function onDropEnd(e) {
+  e.preventDefault(); e.currentTarget.classList.remove('drag');
+  const file = e.dataTransfer.files[0]; if (!file) return;
+  const input = document.getElementById('file-input-end');
+  const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files;
+  handleFileEnd(input);
+}
+
+function processarEndAuditoria() {
+  if (!_rawFileEnd) return;
+  showLoader(true);
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'binary' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const allRows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+      // Detecta colunas necessárias
+      if (!allRows.length) throw new Error('Planilha vazia.');
+      const primeiro = allRows[0];
+      const colNr  = detectarColuna(primeiro, 'nr vcega','nrvcega','nr_vcega','vcega');
+      const colEp  = detectarColuna(primeiro, 'estq. proprietario','estq proprietario','proprietario');
+      const colUma = detectarColuna(primeiro, 'mascara uma','mascarauma','mascara_uma');
+      const colSt  = detectarColuna(primeiro, 'status uma','statusuma','status_uma','status');
+      const colEnd = detectarColuna(primeiro, 'endereco','endereço','address');
+
+      if (!colNr || !colEp || !colUma) throw new Error('Colunas Nr VCega, Estq. Proprietário ou Máscara UMA não encontradas.');
+
+      // Salva apenas as colunas necessárias (reduz drasticamente o tamanho)
+      rawRowsEnd = allRows.map(r => ({
+        _nr:  String(r[colNr]  ?? '').trim(),
+        _ep:  String(r[colEp]  ?? '').trim(),
+        _uma: String(r[colUma] ?? '').trim(),
+        _st:  colSt  ? String(r[colSt]  ?? '').trim() : '',
+        _end: colEnd ? String(r[colEnd] ?? '').trim() : '',
+      })).filter(r => r._nr && r._ep && r._uma);
+
+      // Salva versão compacta no localStorage
+      try {
+        localStorage.setItem('fc_arm_end_audit', JSON.stringify(rawRowsEnd));
+      } catch(storageErr) {
+        // Se ainda assim exceder quota, salva sem persistência (só em memória)
+        console.warn('localStorage quota excedida para planilha de endereços — dados apenas em memória.');
+      }
+
+      document.getElementById('file-sub-end').textContent = allRows.length.toLocaleString('pt-BR') + ' registros · ' + rawRowsEnd.length.toLocaleString('pt-BR') + ' com via';
+      showToast('✅ Planilha de endereços processada — ' + rawRowsEnd.length.toLocaleString('pt-BR') + ' registros com via cega.');
+      renderAuditoria();
+    } catch(err) { showToast('Erro ao processar planilha de endereços: ' + err.message); }
+    finally { showLoader(false); }
+  };
+  reader.readAsBinaryString(_rawFileEnd);
+}
+
+function carregarEndAuditoria() {
+  try {
+    const saved = localStorage.getItem('fc_arm_end_audit');
+    if (!saved) return;
+    rawRowsEnd = JSON.parse(saved);
+    if (rawRowsEnd.length > 0) {
+      const fi = document.getElementById('file-info-end');
+      const dz = document.getElementById('drop-zone-end');
+      if (fi) { fi.style.display = 'flex'; document.getElementById('file-sub-end').textContent = rawRowsEnd.length.toLocaleString('pt-BR') + ' registros com via'; }
+      if (dz) dz.style.display = 'none';
+      const btn = document.getElementById('btn-processar-end');
+      if (btn) btn.disabled = false;
+      const nm = document.getElementById('file-name-end');
+      if (nm && !nm.textContent) nm.textContent = 'Dados carregados do cache';
+    }
+  } catch(e) {}
+}
+
+// Normaliza e compara endereço do detalhamento com chaves sugeridas pelo app
+// Detalhamento: "01-011-009-04-002" (depósito-rua-prédio-nível-apto)
+// Chave app:    "11|9|4|2"          (rua|prédio|nível|apto, sem depósito)
+// Forma normalizada: "011-009-04-002" (RRR-PPP-NN-AAA)
+function enderecoMatch(endDetalhamento, endSugeridosSet) {
+  if (!endDetalhamento) return false;
+  // Remove o segmento de depósito (primeiro elemento) se houver 5 partes
+  const partes = endDetalhamento.split('-');
+  const endSemDep = partes.length === 5 ? partes.slice(1).join('-') : endDetalhamento;
+  // Compara direto
+  if (endSugeridosSet.has(endDetalhamento) || endSugeridosSet.has(endSemDep)) return true;
+  // Normaliza cada chave do app (rua|predio|nivel|apto) para RRR-PPP-NN-AAA
+  for (const k of endSugeridosSet) {
+    const kParts = k.split('|');
+    if (kParts.length !== 4) continue;
+    const [rua, pred, niv, apto] = kParts.map(Number);
+    const kNorm = `${String(rua).padStart(3,'0')}-${String(pred).padStart(3,'0')}-${String(niv).padStart(2,'0')}-${String(apto).padStart(3,'0')}`;
+    if (kNorm === endSemDep || kNorm === endDetalhamento) return true;
+  }
+  return false;
+}
+
+// Constrói índice de UMAs por via a partir da planilha de endereços de auditoria
+// Retorna Map: chave "nrVCega|codEmpresa" → [{ mascUMA, status, endereco }]
+function buildUMAsByViaFromEnd() {
+  const idx = new Map();
+  if (!rawRowsEnd.length) return idx;
+
+  // Suporta tanto formato compacto (_nr, _ep, _uma, _st, _end) quanto formato original
+  const isCompact = '_nr' in rawRowsEnd[0];
+  const seenPorChave = new Map();
+
+  for (const r of rawRowsEnd) {
+    let nr, ep, uma, status, end;
+    if (isCompact) {
+      nr = r._nr; ep = r._ep; uma = r._uma; status = r._st || ''; end = r._end || '';
+    } else {
+      const primeiro = rawRowsEnd[0];
+      const colNr  = detectarColuna(primeiro, 'nr vcega','nrvcega','nr_vcega','vcega');
+      const colEp  = detectarColuna(primeiro, 'estq. proprietario','estq proprietario','proprietario');
+      const colUma = detectarColuna(primeiro, 'mascara uma','mascarauma','mascara_uma');
+      const colSt  = detectarColuna(primeiro, 'status uma','statusuma','status_uma','status');
+      const colEnd = detectarColuna(primeiro, 'endereco','endereço','address');
+      if (!colNr || !colEp || !colUma) return idx;
+      nr = String(r[colNr] ?? '').trim();
+      ep = String(r[colEp] ?? '').trim();
+      uma = String(r[colUma] ?? '').trim();
+      status = colSt ? String(r[colSt] ?? '').trim() : '';
+      end = colEnd ? String(r[colEnd] ?? '').trim() : '';
+    }
+    if (!nr || !ep || !uma) continue;
+    const cod   = converterCodEmpresa(ep);
+    const chave = nr + '|' + cod;
+    if (!seenPorChave.has(chave)) seenPorChave.set(chave, new Map());
+    const mapa = seenPorChave.get(chave);
+    const isExpedicao = end && (end.toUpperCase().startsWith('MTG') || end.toUpperCase().startsWith('STG'));
+    const statusEfetivo = isExpedicao ? 'Endereçada' : status;
+    if (!mapa.has(uma) || statusEfetivo === 'Endereçada') {
+      mapa.set(uma, { mascUMA: uma, status: statusEfetivo, endereco: end });
+    }
+  }
+
+  for (const [chave, mapaUMAs] of seenPorChave) {
+    idx.set(chave, Array.from(mapaUMAs.values()));
+  }
+  return idx;
+}
+
+// ================== DROPDOWN VIAS CEGAS — MODAL ==================
+function criarDropdownViaModal() {
+  if (vcDropdownModal) return vcDropdownModal;
+  const div = document.createElement('div'); div.className = 'floating-dropdown'; div.id = 'vc-dropdown-modal';
+  document.body.appendChild(div); vcDropdownModal = div; return div;
+}
+
+function preencherDropdownViaModal(filtro) {
+  const dd = criarDropdownViaModal();
+  const f = (filtro || '').trim().toLowerCase();
+  let lista = viasUnicas;
+  if (f) lista = viasUnicas.filter(v => v.nr.toLowerCase().includes(f) || v.cod.toLowerCase().includes(f));
+  if (!lista.length) { dd.innerHTML = '<div class="floating-option" style="color:var(--muted);">Nenhuma via encontrada.</div>'; return; }
+  dd.innerHTML = lista.slice(0, 80).map(v =>
+    `<div class="floating-option" data-nr="${escapeHtml(v.nr)}" data-cod="${escapeHtml(v.cod)}" data-chave="${escapeHtml(v.chave)}">
+      <div class="option-name">📦 Via ${escapeHtml(v.nr)}</div>
+      <div class="option-linha">Cód. Empresa: ${escapeHtml(v.cod)} · ${(viaCegaMap.get(v.chave)||[]).length} UMAs</div>
+    </div>`
+  ).join('');
+  dd.querySelectorAll('.floating-option[data-nr]').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.getElementById('modal-via').value = opt.dataset.nr;
+      document.getElementById('modal-via').dataset.cod = opt.dataset.cod;
+      document.getElementById('modal-via').dataset.chave = opt.dataset.chave;
+      document.getElementById('modal-via-warn').style.display = 'none';
+      fecharDropdownViaModal();
+    });
+  });
+}
+
+function abrirDropdownViaModal() {
+  if (!viasUnicas.length) return;
+  if (vcDropdownModalOpen) return;
+  criarDropdownViaModal();
+  preencherDropdownViaModal(document.getElementById('modal-via').value);
+  const rect = document.getElementById('modal-via-combobox').getBoundingClientRect();
+  vcDropdownModal.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+  vcDropdownModal.style.left = (rect.left + window.scrollX) + 'px';
+  vcDropdownModal.style.width = rect.width + 'px';
+  vcDropdownModal.classList.add('open'); vcDropdownModalOpen = true;
+  setTimeout(() => document.addEventListener('click', outsideClickViaModal), 0);
+}
+
+function fecharDropdownViaModal() {
+  if (vcDropdownModal) vcDropdownModal.classList.remove('open');
+  vcDropdownModalOpen = false;
+  document.removeEventListener('click', outsideClickViaModal);
+}
+
+function outsideClickViaModal(e) {
+  const cb = document.getElementById('modal-via-combobox');
+  if (!cb || !cb.contains(e.target)) fecharDropdownViaModal();
+}
+
+function filtrarViasModal() {
+  const val = document.getElementById('modal-via').value;
+  document.getElementById('modal-via').dataset.cod = '';
+  document.getElementById('modal-via').dataset.chave = '';
+  if (vcDropdownModalOpen) preencherDropdownViaModal(val);
+  else abrirDropdownViaModal();
+  // Verifica se é via válida
+  const match = viasUnicas.find(v => v.nr === val.trim());
+  const warn = document.getElementById('modal-via-warn');
+  if (warn) warn.style.display = (val.trim() && !match && viasUnicas.length > 0) ? '' : 'none';
+}
+
+function toggleDropdownViaModal() { vcDropdownModalOpen ? fecharDropdownViaModal() : abrirDropdownViaModal(); }
+
+// Dropdown de auditoria removido — lista automática usada no lugar
+
+// ================== AUDITORIA — LÓGICA PRINCIPAL ==================
+// Constrói índice: endereço normalizado → Máscara UMA  (da planilha de endereços)
+function buildEnderecoUMAIndex() {
+  const idx = new Map(); // endereço formatado → Set de UMAs
+  if (!rawRows || !rawRows.length) return idx;
+  const primeiro = rawRows[0];
+  const colEnd = detectarColuna(primeiro, 'endereco', 'endereço');
+  const colUma = detectarColuna(primeiro, 'mascara uma', 'mascarauma');
+  const colNr  = detectarColuna(primeiro, 'nr vcega', 'nrvcega');
+  const colEp  = detectarColuna(primeiro, 'estq. proprietario', 'estq proprietario', 'proprietario');
+  if (!colEnd || !colUma) return idx;
+  for (const r of rawRows) {
+    const endStr = String(r[colEnd] ?? '').trim();
+    const uma    = String(r[colUma] ?? '').trim();
+    const nr     = colNr ? String(r[colNr] ?? '').trim() : '';
+    const ep     = colEp ? String(r[colEp] ?? '').trim() : '';
+    if (!endStr || !uma) continue;
+    if (!idx.has(endStr)) idx.set(endStr, { umas: new Set(), nrVC: nr, codEmp: converterCodEmpresa(ep) });
+    idx.get(endStr).umas.add(uma);
+  }
+  return idx;
+}
+
+// Constrói índice reverso: UMA → endereço
+function buildUMAEnderecoIndex() {
+  const idx = new Map(); // mascUMA → endereço
+  if (!rawRows || !rawRows.length) return idx;
+  const primeiro = rawRows[0];
+  const colEnd = detectarColuna(primeiro, 'endereco', 'endereço', 'address');
+  const colUma = detectarColuna(primeiro, 'mascara uma', 'mascarauma', 'mascara_uma');
+  if (!colEnd || !colUma) return idx;
+  for (const r of rawRows) {
+    const endStr = String(r[colEnd] ?? '').trim();
+    const uma    = String(r[colUma] ?? '').trim();
+    if (!uma || !endStr) continue;
+    idx.set(uma, endStr);
+  }
+  return idx;
+}
+
+// auditarViaCega removida — renderAuditoria() agora lista tudo automaticamente
+
+function abrirModalAuditoria(chave, filtro) {
+  const umasByVia = buildUMAsByViaFromEnd();
+  const umasVia = umasByVia.get(chave) || [];
+  const [nr, cod] = chave.split('|');
+
+  // Reconstrói endSugeridosSet para esta via
+  const endSugeridosSet = new Set();
+  const viaNum = nr;
+  for (const tarefa of [...tarefasAtivas, ...tarefasFinalizadas]) {
+    if (String(tarefa.reg.via||'').trim() === viaNum) {
+      (tarefa.alocacao || []).forEach(aloc => {
+        (aloc.enderecos || []).forEach(e => endSugeridosSet.add(e.key));
+      });
+    }
+  }
+
+  const listaCorretas = [], listaIncorretas = [], listaPendentes = [];
+  for (const u of umasVia) {
+    const statusUMA = u.status;
+    const endUMA = u.endereco || '';
+    if (statusUMA === 'Endereçada' && endUMA) {
+      const match = enderecoMatch(endUMA, endSugeridosSet);
+      if (match) listaCorretas.push(u);
+      else listaIncorretas.push(u);
+    } else {
+      listaPendentes.push(u);
+    }
+  }
+
+  let lista = umasVia, titulo = 'Todas as UMAs';
+  if (filtro === 'corretas')   { lista = listaCorretas;   titulo = 'UMAs Endereçadas Corretamente'; }
+  if (filtro === 'incorretas') { lista = listaIncorretas; titulo = 'UMAs Endereçadas Incorretamente'; }
+  if (filtro === 'pendentes')  { lista = listaPendentes;  titulo = 'UMAs Pendentes'; }
+
+  document.getElementById('modal-auditoria-title').textContent = `Via ${nr} · ${titulo}`;
+  document.getElementById('modal-auditoria-sub').textContent = `Cód. Empresa: ${cod} · ${lista.length} registro(s)`;
+
+  if (!lista.length) {
+    document.getElementById('modal-auditoria-body').innerHTML = '<div class="empty"><div class="empty-ico">🎉</div><p>Nenhum registro nesta categoria.</p></div>';
+  } else {
+    const header = `<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border2);font-size:10px;font-weight:700;color:var(--muted2);">
+      <span>UMA</span><span>Status</span><span>Endereço</span></div>`;
+    const rows = lista.map(d => {
+      let badgeColor = '#6b7280', badgeBg = 'var(--surface3)';
+      if (d.status === 'Endereçada') {
+        const correct = enderecoMatch(d.endereco||'', endSugeridosSet);
+        badgeBg = correct ? '#dcfce7' : '#fef3c7';
+        badgeColor = correct ? '#166534' : '#92400e';
+      } else if (d.status === 'Fechada' || d.status === 'Bloqueada') {
+        badgeBg = '#fee2e2'; badgeColor = '#991b1b';
+      }
+      return `<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border2);">
+        <div style="font-size:11px;font-weight:700;font-family:'DM Mono',monospace;">${escapeHtml(d.mascUMA)}</div>
+        <div><span style="background:${badgeBg};color:${badgeColor};border-radius:5px;padding:2px 7px;font-size:10px;font-weight:700;white-space:nowrap;">${escapeHtml(d.status||'—')}</span></div>
+        <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--muted2);white-space:nowrap;">${escapeHtml(d.endereco||'—')}</div>
+      </div>`;
+    }).join('');
+    document.getElementById('modal-auditoria-body').innerHTML = header + rows;
+  }
+  // Armazena dados para exportação
+  window._auditoriaExportData = { lista, titulo, nr, cod };
+  document.getElementById('modal-auditoria').classList.add('open');
+}
+
+function exportarViaExcel(chave, via) {
+  const umasByVia = buildUMAsByViaFromEnd();
+  const umasVia = umasByVia.get(chave) || [];
+  if (!umasVia.length) { showToast('Nenhuma UMA encontrada para esta via.'); return; }
+
+  const [nr, cod] = chave.split('|');
+  const endSugeridosSet = new Set();
+  for (const tarefa of [...tarefasAtivas, ...tarefasFinalizadas]) {
+    if (String(tarefa.reg.via||'').trim() === via) {
+      (tarefa.alocacao || []).forEach(aloc => {
+        (aloc.enderecos || []).forEach(e => endSugeridosSet.add(e.key));
+      });
+    }
+  }
+
+  const rows = [['Via Cega', 'Cód. Empresa', 'Máscara UMA', 'Status', 'Endereço', 'Categoria']];
+  for (const u of umasVia) {
+    let categoria = 'Pendente';
+    if (u.status === 'Endereçada' && u.endereco) {
+      const endNorm = u.endereco.replace(/-/g,'|');
+      const correct = enderecoMatch(u.endereco||'', endSugeridosSet);
+      categoria = correct ? 'Correta' : 'Incorreta';
+    }
+    rows.push([nr, cod, u.mascUMA, u.status || '—', u.endereco || '—', categoria]);
+  }
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:12},{wch:14},{wch:24},{wch:22},{wch:18},{wch:16}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Via ' + via);
+  XLSX.writeFile(wb, `Auditoria_Via${via}.xlsx`);
+}
+
+function exportarAuditoriaExcel() {
+  const d = window._auditoriaExportData;
+  if (!d || !d.lista || !d.lista.length) { showToast('Nenhum dado para exportar.'); return; }
+
+  // Monta dados para exportação
+  const rows = [['Via Cega', 'Cód. Empresa', 'Máscara UMA', 'Status', 'Endereço', 'Categoria']];
+  for (const u of d.lista) {
+    let categoria = 'Pendente';
+    if (u.status === 'Endereçada' && u.endereco) categoria = 'Endereçada';
+    rows.push([d.nr, d.cod, u.mascUMA, u.status || '—', u.endereco || '—', categoria]);
+  }
+
+  // Cria planilha XLSX
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  // Larguras de coluna
+  ws['!cols'] = [{wch:12},{wch:14},{wch:24},{wch:22},{wch:18},{wch:16}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Auditoria');
+  const nomeArq = `Auditoria_Via${d.nr}_${d.titulo.replace(/[^a-zA-Z0-9]/g,'_')}.xlsx`;
+  XLSX.writeFile(wb, nomeArq);
 }
 
 // Versão usada dentro da transação Firebase (recebe sets externos)
@@ -1512,7 +2332,7 @@ function hideLayTip(){const t=document.getElementById('lay-tooltip');if(t)t.styl
 </script>
 
 <!-- MODAL DE CRIAÇÃO DE TAREFA (COM NÍVEL MÍNIMO E MÁXIMO) -->
-<div class="modal-overlay" id="arm-modal"><div class="modal-box"><div class="modal-header"><div class="modal-header-ico">📦</div><div><div class="modal-header-title">Registrar Armazenagem</div><div class="modal-header-sub">Confirme os dados da via cega</div></div></div><div class="modal-prod-bar"><div><div class="modal-prod-cod" id="modal-cod">—</div><div class="modal-prod-name" id="modal-name">—</div></div><div class="modal-prod-tag" id="modal-linha">—</div></div><div class="modal-body"><div class="mfield"><label>Via Cega <span class="modal-required">*</span></label><input id="modal-via" type="text" placeholder="Número da via cega..."></div><div class="mfield"><label>Fornecedor <span class="modal-required">*</span></label><input id="modal-forn" type="text" placeholder="Nome do fornecedor..." readonly></div><div class="mfield"><label>Empilhador <span class="modal-required">*</span></label><select id="modal-emp-select" onchange="onEmpilhadorChange()" style="width:100%;padding:11px 14px;border:1.5px solid var(--border2);border-radius:var(--r-sm);font-family:'Sora',sans-serif;font-size:13px;color:var(--text);background:var(--surface2);outline:none;"><option value="">Selecione o empilhador...</option></select></div><div class="mfield-row" style="display:none"><div class="mfield"><label>Matrícula</label><input id="modal-mat" type="text" readonly></div><div class="mfield"><label>Nome</label><input id="modal-emp" type="text" readonly></div></div><div class="mfield"><label>Quantidade de Paletes <span class="modal-required">*</span></label><input id="modal-paletes" type="number" min="1" step="1" placeholder="Número de paletes a armazenar"></div><div class="mfield-row"><div class="mfield"><label>Nível mínimo <span class="modal-required">*</span></label><input id="modal-nivel-min" type="number" min="2" max="7" step="1" value="2" placeholder="Ex: 5"></div><div class="mfield"><label>Nível máximo <span class="modal-required">*</span></label><input id="modal-nivel-max" type="number" min="2" max="7" step="1" value="7" placeholder="Ex: 6"></div></div></div><div class="modal-footer"><button class="modal-btn-cancel" onclick="closeModal()">Cancelar</button><button class="modal-btn-confirm" onclick="confirmModal()">Salvar</button></div></div></div>
+<div class="modal-overlay" id="arm-modal"><div class="modal-box"><div class="modal-header"><div class="modal-header-ico">📦</div><div><div class="modal-header-title">Registrar Armazenagem</div><div class="modal-header-sub">Confirme os dados da via cega</div></div></div><div class="modal-prod-bar"><div><div class="modal-prod-cod" id="modal-cod">—</div><div class="modal-prod-name" id="modal-name">—</div></div><div class="modal-prod-tag" id="modal-linha">—</div></div><div class="modal-body"><div class="mfield"><label>Via Cega <span class="modal-required">*</span></label><div class="combobox" id="modal-via-combobox"><div class="combobox-input"><input type="text" id="modal-via" placeholder="Digite ou selecione a via cega..." autocomplete="off" oninput="filtrarViasModal()" onfocus="abrirDropdownViaModal()"><button class="combobox-btn" type="button" onclick="toggleDropdownViaModal()">▼</button></div></div><div id="modal-via-warn" style="font-size:10px;color:var(--fc-red);margin-top:3px;display:none;">⚠️ Via não encontrada na planilha</div></div><div class="mfield"><label>Fornecedor <span class="modal-required">*</span></label><input id="modal-forn" type="text" placeholder="Nome do fornecedor..." readonly></div><div class="mfield"><label>Empilhador <span class="modal-required">*</span></label><select id="modal-emp-select" onchange="onEmpilhadorChange()" style="width:100%;padding:11px 14px;border:1.5px solid var(--border2);border-radius:var(--r-sm);font-family:'Sora',sans-serif;font-size:13px;color:var(--text);background:var(--surface2);outline:none;"><option value="">Selecione o empilhador...</option></select></div><div class="mfield-row" style="display:none"><div class="mfield"><label>Matrícula</label><input id="modal-mat" type="text" readonly></div><div class="mfield"><label>Nome</label><input id="modal-emp" type="text" readonly></div></div><div class="mfield"><label>Quantidade de Paletes <span class="modal-required">*</span></label><input id="modal-paletes" type="number" min="1" step="1" placeholder="Número de paletes a armazenar"></div><div class="mfield-row"><div class="mfield"><label>Nível mínimo <span class="modal-required">*</span></label><input id="modal-nivel-min" type="number" min="2" max="7" step="1" value="2" placeholder="Ex: 5"></div><div class="mfield"><label>Nível máximo <span class="modal-required">*</span></label><input id="modal-nivel-max" type="number" min="2" max="7" step="1" value="7" placeholder="Ex: 6"></div></div></div><div class="modal-footer"><button class="modal-btn-cancel" onclick="closeModal()">Cancelar</button><button class="modal-btn-confirm" onclick="confirmModal()">Salvar</button></div></div></div>
 
 <!-- MODAL DE CADASTRO DE FORNECEDOR -->
 <div class="modal-overlay" id="modal-cadastro-forn"><div class="modal-box"><div class="modal-header"><div class="modal-header-ico">➕</div><div><div class="modal-header-title">Cadastrar Fornecedor</div><div class="modal-header-sub">Preencha os dados do novo fornecedor</div></div></div><div class="modal-body"><div class="mfield"><label>Nome do Fornecedor <span class="modal-required">*</span></label><input id="modal-cadastro-forn-nome" type="text" placeholder="Ex: NOVO FORNECEDOR LTDA"></div><div class="mfield"><label>Linha <span class="modal-required">*</span></label><select id="modal-cadastro-forn-linha-select"></select></div></div><div class="modal-footer"><button class="modal-btn-cancel" onclick="fecharModalCadastro()">Cancelar</button><button class="modal-btn-confirm" onclick="salvarFornecedorManual()">Cadastrar</button></div></div></div>
