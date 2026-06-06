@@ -1484,8 +1484,11 @@ function verificarAutoFinalizacao() {
     if (!chave) continue;
     const umasVia = umasByVia.get(chave) || [];
     if (!umasVia.length) continue;
-    // Pendente = status diferente de "Endereçada" OU endereço vazio
-    const pendentes = umasVia.filter(u => u.status !== 'Endereçada' || !u.endereco).length;
+    // Regra: via ausente da planilha de Via Cega = sem pendência = finalizar
+    const viaInVC = Array.from(viaCegaMap.keys()).some(k => k.startsWith(via + '|'));
+    if (viaCegaMap.size > 0 && !viaInVC) { toFinalize.push({ id: task.id, via }); continue; }
+    // Pendente = não endereçada E não está em MTG/STG (expedição/montagem)
+    const pendentes = umasVia.filter(u => !/MTG|STG/i.test(u.endereco || '') && (u.status !== 'Endereçada' || !u.endereco)).length;
     if (pendentes === 0) toFinalize.push({ id: task.id, via });
   }
   toFinalize.forEach(({ id, via }) => finalizarTarefaAutomatico(id, via));
@@ -1544,14 +1547,26 @@ function renderAuditoria() {
     }
     let chaveEncontrada = '';
     for (const [chave] of viaCegaMap) { if (chave.startsWith(via + '|')) { chaveEncontrada = chave; break; } }
+    const viaInViaCega = !!chaveEncontrada;
     if (!chaveEncontrada) { for (const [chave] of umasByVia) { if (chave.startsWith(via + '|')) { chaveEncontrada = chave; break; } } }
     const umasVia = chaveEncontrada ? (umasByVia.get(chaveEncontrada) || []) : [];
     const totalUMAs = umasVia.length;
+
+    // Regra: Via Cega importada e via ausente dela = sem pendência = 100%
+    if (viaCegaMap.size > 0 && !viaInViaCega) {
+      item._s = { chaveEncontrada, umasVia, totalUMAs, corretas: totalUMAs, incorretas: 0, pendentes: 0, listaCorretas: [...umasVia], listaIncorretas: [], listaPendentes: [], semDados: false, pct: 100, ausenteViaCega: true };
+      return;
+    }
+
     let corretas = 0, incorretas = 0, pendentes = 0;
     const listaCorretas = [], listaIncorretas = [], listaPendentes = [];
     for (const u of umasVia) {
       const statusUMA = u.status; const endUMA = u.endereco || '';
-      if (statusUMA === 'Endereçada' && endUMA) {
+      const isMtgStg = /MTG|STG/i.test(endUMA);
+      if (isMtgStg) {
+        // Endereço de Montagem/Stage = UMA expedida, considera como correta
+        corretas++; listaCorretas.push(u);
+      } else if (statusUMA === 'Endereçada' && endUMA) {
         if (enderecoMatch(endUMA, endSugeridosSet)) { corretas++; listaCorretas.push(u); }
         else { incorretas++; listaIncorretas.push(u); }
       } else { pendentes++; listaPendentes.push(u); }
@@ -1819,7 +1834,7 @@ function buildUMAsByViaFromEnd() {
     const chave = nr + '|' + cod;
     if (!seenPorChave.has(chave)) seenPorChave.set(chave, new Map());
     const mapa = seenPorChave.get(chave);
-    const isExpedicao = end && (end.toUpperCase().startsWith('MTG') || end.toUpperCase().startsWith('STG'));
+    const isExpedicao = end && /MTG|STG/i.test(end);
     const statusEfetivo = isExpedicao ? 'Endereçada' : status;
     if (!mapa.has(uma) || statusEfetivo === 'Endereçada') {
       mapa.set(uma, { mascUMA: uma, status: statusEfetivo, endereco: end });
