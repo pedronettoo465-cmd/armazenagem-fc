@@ -260,6 +260,65 @@ input[readonly] { background-color: var(--surface3); cursor: default; color: var
 .login-btn{width:100%;padding:12px;background:var(--fc-red);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Sora',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;}
 .login-btn:hover{background:var(--fc-red-d);}
 .login-btn:disabled{opacity:.5;cursor:not-allowed;}
+/* ===== TC2: Redesign cards Em andamento ===== */
+.tc2-card{background:var(--surface);border:1px solid var(--border2);border-radius:12px;box-shadow:var(--shadow-sm);margin-bottom:14px;overflow:hidden;transition:box-shadow .2s,border-color .2s;border-left:3px solid var(--fc-green);}
+.tc2-card:hover{box-shadow:var(--shadow-md);}
+.tc2-card.warn-time{border-left-color:var(--amber);}
+.tc2-card.overdue{border-left-color:var(--fc-red);}
+.tc2-header{padding:14px 16px 10px;cursor:pointer;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;transition:background .15s;}
+.tc2-header:hover{background:rgba(0,0,0,.015);}
+.tc2-main{flex:1;min-width:0;}
+.tc2-row1{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px;}
+.tc2-row2{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.tc2-via{background:var(--fc-green);color:#fff;border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;letter-spacing:.3px;flex-shrink:0;}
+.tc2-forn{font-size:14px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px;}
+.tc2-timer{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;background:var(--fc-green-bg);color:var(--fc-green);white-space:nowrap;margin-left:auto;}
+.tc2-timer.warn{background:var(--amber-bg);color:var(--amber);}
+.tc2-timer.overdue{background:var(--fc-red-bg);color:var(--fc-red);animation:pulse .8s ease-in-out infinite alternate;}
+.tc2-meta{font-size:10px;color:var(--muted2);display:flex;align-items:center;gap:4px;}
+.tc2-toggle{width:28px;height:28px;border-radius:50%;background:var(--surface3);border:1px solid var(--border2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted2);flex-shrink:0;transition:all .15s;font-family:'Sora',sans-serif;}
+.tc2-toggle:hover{background:var(--surface2);color:var(--text);}
+.tc2-body{border-top:1px solid var(--border);}
+.tc2-body.minimized{display:none;}
+.tc2-info-row{display:grid;grid-template-columns:1fr auto;gap:12px;padding:14px 16px;background:var(--surface2);border-bottom:1px solid var(--border);}
+.tc2-prod-cod{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);margin-bottom:3px;letter-spacing:.5px;}
+.tc2-prod-name{font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;line-height:1.3;}
+.tc2-tags{display:flex;gap:5px;flex-wrap:wrap;}
+.tc2-tag{background:var(--surface3);border:1px solid var(--border2);border-radius:6px;padding:2px 8px;font-size:9px;font-weight:600;color:var(--muted2);}
+.tc2-tag-green{background:var(--fc-green-bg)!important;border-color:rgba(0,155,72,.2)!important;color:var(--fc-green)!important;}
+.tc2-paletes{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:68px;}
+.tc2-pal-num{font-size:22px;font-weight:700;font-family:'DM Mono',monospace;color:var(--fc-green);line-height:1;}
+.tc2-pal-num.tc2-partial{color:var(--amber);}
+.tc2-pal-num.tc2-zero{color:var(--fc-red);}
+.tc2-pal-den{font-size:11px;font-weight:500;color:var(--muted2);}
+.tc2-pal-lbl{font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:.6px;font-weight:600;}
+.tc2-progress{width:68px;height:4px;background:var(--surface3);border-radius:3px;overflow:hidden;margin-top:3px;}
+.tc2-progress-bar{height:100%;background:var(--fc-green);border-radius:3px;transition:width .4s ease;}
+.tc2-progress-bar.partial{background:var(--amber);}
+.tc2-alert{display:flex;align-items:center;gap:7px;margin:8px 16px 0;padding:7px 12px;border-radius:8px;font-size:11px;font-weight:600;}
+.tc2-alert-amber{background:var(--amber-bg);border:1px solid rgba(245,158,11,.3);color:#92400e;}
+.tc2-alert-red{background:var(--fc-red-bg);border:1px solid rgba(227,6,19,.2);color:var(--fc-red);}
+.tc2-addr-section{padding:12px 16px;}
+.tc2-addr-ttl{display:flex;align-items:center;justify-content:space-between;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);margin-bottom:10px;}
+.tc2-rua-block{background:var(--surface);border:1px solid var(--border2);border-radius:10px;margin-bottom:8px;overflow:hidden;}
+.tc2-rua-hdr{display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--surface2);border-bottom:1px solid var(--border);}
+.tc2-rua-num{font-size:11px;font-weight:800;font-family:'DM Mono',monospace;color:var(--text);}
+.tc2-rua-sub{font-size:10px;color:var(--muted2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tc2-rua-cnt{font-size:9px;font-weight:700;background:var(--fc-green-bg);color:var(--fc-green);border-radius:10px;padding:1px 8px;white-space:nowrap;font-family:'DM Mono',monospace;}
+.tc2-chips{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;}
+.tc2-chip{font-family:'DM Mono',monospace;font-size:10px;font-weight:600;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:4px 8px;color:var(--text);display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+.tc2-chip-conflict{background:var(--amber-bg)!important;border-color:rgba(245,158,11,.4)!important;color:#92400e!important;}
+.tc2-chip-lvl{background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:0 4px;font-size:8px;font-weight:700;color:var(--muted2);}
+.tc2-actions{display:flex;gap:8px;padding:10px 16px;border-top:1px solid var(--border);background:var(--surface2);flex-wrap:wrap;}
+.tc2-btn{padding:8px 14px;border-radius:8px;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid transparent;transition:all .15s;display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;}
+.tc2-btn-confirm{background:var(--fc-green);border-color:var(--fc-green);color:#fff;flex:2;}
+.tc2-btn-confirm:hover{background:var(--fc-green-d);border-color:var(--fc-green-d);}
+.tc2-btn-edit{background:var(--surface);border-color:var(--border2);color:var(--text);flex:1;}
+.tc2-btn-edit:hover{background:var(--blue-bg);border-color:var(--blue);color:var(--blue);}
+.tc2-btn-cancel{background:var(--surface);border-color:rgba(227,6,19,.35);color:var(--fc-red);flex:1;}
+.tc2-btn-cancel:hover{background:var(--fc-red-bg);}
+.tc2-btn-print{background:var(--surface);border-color:var(--border2);color:var(--muted2);flex-shrink:0;min-width:38px;}
+.tc2-btn-print:hover{color:var(--text);border-color:var(--muted2);}
 </style>
 </head>
 <body>
@@ -307,7 +366,28 @@ input[readonly] { background-color: var(--surface3); cursor: default; color: var
 <div id="view-config" class="wrapper" style="display:none"><div class="card"><div class="card-hdr"><div class="card-ico green">🗺️</div><div><div class="card-ttl">Layout do CD · Rua × Linha</div><div class="card-sub">Defina qual linha de produto cada rua comporta (ruas 1–30)</div></div><button onclick="resetToDefault()" style="margin-left:auto;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;color:var(--muted2);cursor:pointer;font-family:'Sora',sans-serif;font-size:11px;font-weight:600;padding:7px 13px;">↺ Restaurar Padrão</button></div><div class="card-body"><div class="config-note">⚡ Layout pré-definido carregado automaticamente. Ajuste as ruas que precisar — as alterações são salvas automaticamente.<br>⚠️ <strong>Nível 1 bloqueado para armazenagem</strong> — reservado exclusivamente para picking (níveis 2+ são sugeridos).</div><div class="rua-grid" id="rua-grid"></div></div></div></div>
 
 <div id="view-ativas" class="wrapper" style="display:none">
-  <div class="kpi-row kpi-row-4"><div class="kpi-mini"><div class="kpi-lbl">Livres (N2+)</div><div class="kpi-val" id="kpi-livres" style="color:var(--fc-green)">—</div><div class="kpi-sub">endereços vagos</div></div><div class="kpi-mini"><div class="kpi-lbl">Em Andamento</div><div class="kpi-val" id="kpi-ativas" style="color:var(--blue)">0</div><div class="kpi-sub">tarefas abertas</div></div><div class="kpi-mini"><div class="kpi-lbl">Conflitos</div><div class="kpi-val" id="kpi-conflitos" style="color:var(--amber)">0</div><div class="kpi-sub">end. duplicados</div></div><div class="kpi-mini"><div class="kpi-lbl">Ocupação</div><div class="kpi-val" id="kpi-ocup" style="color:var(--fc-red)">—</div><div class="kpi-sub">do CD</div></div></div>
+  <div id="ativas-dash-section">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <span style="font-size:10px;font-weight:700;color:var(--muted2);letter-spacing:1px;text-transform:uppercase;">Dashboard · Ordens em andamento</span>
+      <span id="ativas-kpi-label" style="display:none;font-size:10px;font-weight:600;color:var(--blue);background:rgba(37,99,235,.1);padding:3px 10px;border-radius:12px;">📅 —</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:10px;">
+      <div class="kpi-mini"><div class="kpi-lbl">Ordens</div><div class="kpi-val" id="kpi-ativas" style="color:var(--blue)">0</div><div class="kpi-sub" id="kpi-ativas-sub">em andamento</div></div>
+      <div class="kpi-mini"><div class="kpi-lbl">Paletes</div><div class="kpi-val" id="kpi-paletes-ativas" style="color:var(--fc-green)">0</div><div class="kpi-sub">a armazenar</div></div>
+      <div class="kpi-mini"><div class="kpi-lbl">Empilhadores</div><div class="kpi-val" id="kpi-emps-ativas" style="color:var(--blue)">0</div><div class="kpi-sub">em atividade</div></div>
+      <div class="kpi-mini"><div class="kpi-lbl">End. alocados</div><div class="kpi-val" id="kpi-enderecos-ativas" style="color:var(--fc-green)">0</div><div class="kpi-sub">reservados</div></div>
+      <div class="kpi-mini"><div class="kpi-lbl">Conflitos</div><div class="kpi-val" id="kpi-conflitos" style="color:var(--amber)">0</div><div class="kpi-sub">end. duplicados</div></div>
+      <div class="kpi-mini"><div class="kpi-lbl">Com falta</div><div class="kpi-val" id="kpi-faltam-ativas" style="color:var(--fc-red)">0</div><div class="kpi-sub">ordens incompletas</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:8px;">
+      <div class="kpi-mini"><div class="kpi-lbl">Livres N2+</div><div class="kpi-val" id="kpi-livres" style="color:var(--fc-green)">—</div><div class="kpi-sub">armazenagem</div></div>
+      <div class="kpi-mini"><div class="kpi-lbl">Livres N1</div><div class="kpi-val" id="kpi-livres-n1" style="color:var(--blue)">—</div><div class="kpi-sub">nível picking</div></div>
+      <div class="kpi-mini"><div class="kpi-lbl">Ocupação CD</div><div class="kpi-val" id="kpi-ocup" style="color:var(--fc-red)">—</div><div class="kpi-sub">do armazém</div></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+      <button class="fin-export-btn" onclick="exportarEndereçosLivres()">⬇ Exportar endereços livres</button>
+    </div>
+  </div>
   <div class="card"><div class="card-hdr"><div class="card-ico green">🔍</div><div><div class="card-ttl">Buscar Fornecedor</div><div class="card-sub">Digite ou selecione o fornecedor da via cega</div></div></div><div class="card-body">
     <div class="combobox" id="fornecedor-combobox">
       <div class="combobox-input">
@@ -317,6 +397,11 @@ input[readonly] { background-color: var(--surface3); cursor: default; color: var
     </div>
     <div id="cadastrar-fornecedor-area" style="margin-top: 8px;"></div>
   </div></div>
+  <div class="fin-filters" id="ativas-filters" style="margin-bottom:8px;">
+    <label style="font-size:12px;font-weight:600;color:var(--muted2);align-self:center;">📅 Filtrar por data de criação:</label>
+    <input type="date" class="fin-filter-sel" id="ativas-filter-data" onchange="renderActiveTasks()" title="Filtrar por data de criação" style="cursor:pointer;font-family:'Sora',sans-serif;font-size:13px;flex:0 0 auto;">
+    <button onclick="document.getElementById('ativas-filter-data').value='';renderActiveTasks();" title="Limpar filtro de data" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted2);padding:0 4px;opacity:0;transition:opacity .2s;" id="btn-limpar-data-ativas">✕</button>
+  </div>
   <div id="tasks-ativas-container"></div>
 </div>
 
@@ -337,12 +422,8 @@ input[readonly] { background-color: var(--surface3); cursor: default; color: var
     <input class="fin-filter-input" id="fin-search" type="text" placeholder="Buscar empilhador, fornecedor ou via..." oninput="renderCompletedTasks()">
     <select class="fin-filter-sel" id="fin-filter-emp" onchange="renderCompletedTasks()"><option value="">Todos empilhadores</option></select>
     <select class="fin-filter-sel" id="fin-filter-forn" onchange="renderCompletedTasks()"><option value="">Todos fornecedores</option></select>
-    <select class="fin-filter-sel" id="fin-filter-data" onchange="renderCompletedTasks()">
-      <option value="">Qualquer data</option>
-      <option value="hoje">Hoje</option>
-      <option value="semana">Esta semana</option>
-      <option value="mes">Este mês</option>
-    </select>
+    <input type="date" class="fin-filter-sel" id="fin-filter-data" onchange="renderCompletedTasks()" title="Filtrar por data" style="cursor:pointer;font-family:'Sora',sans-serif;font-size:13px;">
+    <button onclick="document.getElementById('fin-filter-data').value='';renderCompletedTasks();" title="Limpar data" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted2);padding:0 4px;" id="btn-limpar-data">✕</button>
   </div>
   <div id="tasks-finalizadas-container"></div>
 </div>
@@ -453,6 +534,20 @@ input[readonly] { background-color: var(--surface3); cursor: default; color: var
     </div>
   </div>
 
+  <!-- Filtro por data de criação -->
+  <div class="fin-filters" style="margin-bottom:8px;align-items:center;">
+    <label style="font-size:12px;font-weight:600;color:var(--muted2);align-self:center;white-space:nowrap;">📅 Data de criação:</label>
+    <input type="date" class="fin-filter-sel" id="audit-filter-data" onchange="setAuditData(this.value)" style="cursor:pointer;font-family:'Sora',sans-serif;font-size:13px;flex:0 0 auto;">
+    <button onclick="setAuditData('');document.getElementById('audit-filter-data').value='';" title="Limpar filtro de data" id="btn-audit-limpar-data" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted2);padding:0 4px;opacity:0;transition:opacity .2s;">✕</button>
+  </div>
+  <!-- KPI summary interativo (gerado por renderAuditoria) -->
+  <div id="audit-kpi-summary" style="margin-bottom:12px;"></div>
+  <!-- Filtro de status -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;" id="audit-filter-bar">
+    <button class="mapa-mode-btn active" id="audit-btn-todas" onclick="setAuditFiltro('todas')">📋 Todas</button>
+    <button class="mapa-mode-btn" id="audit-btn-ativas" onclick="setAuditFiltro('ativas')">⏳ Em andamento</button>
+    <button class="mapa-mode-btn" id="audit-btn-finalizadas" onclick="setAuditFiltro('finalizadas')">✅ Finalizadas</button>
+  </div>
   <!-- Lista automática de todas as vias das ordens -->
   <div id="auditoria-lista-container"></div>
 </div>
@@ -482,22 +577,115 @@ input[readonly] { background-color: var(--surface3); cursor: default; color: var
 
 <script>
 // ================== REGRAS DE APARTAMENTOS ==================
-function getMaxApartamento(rua, predio, nivel, tipoRua = 'padrao') {
-  if (tipoRua === 'porta_palete') {
-    // Rua 13: prédios PARES só têm aptos 1 e 2 (regra física do CD)
-    if (rua === 13 && predio % 2 === 0) return 2;
-    if (rua >= 1 && rua <= 12) return 2;
-    if (rua >= 13 && rua <= 16) return 3;
-    if ([18,19,20].includes(rua)) {
-      if (predio <= 50) return 2;
-      if (predio >= 51 && predio <= 100) return (nivel===1||nivel===2)?4:2;
-    }
-    if (rua >= 21 && rua <= 30) return 2;
-    return 2;
+// Retorna o nível MÍNIMO para combinações específicas rua/prédio
+// (prédios que existem apenas a partir de N5, por exemplo)
+function getMinNivel(rua, predio) {
+  if (rua === 18 && predio === 62) return 5;
+  if ((rua === 19 || rua === 20) && (predio === 61 || predio === 62)) return 5;
+  if (rua === 21 && predio === 62) return 5;
+  return 1; // default: começa no N1
+}
+
+// Retorna o nível máximo para a combinação rua/prédio (regras rua a rua)
+function getMaxNivel(rua, predio) {
+  switch(rua) {
+    case 1: case 2: return 7;
+    case 3:
+      // ímpar 13+ → N6; todo o resto → N7
+      if (predio % 2 !== 0 && predio >= 13) return 6;
+      return 7;
+    case 4: case 5: case 6: case 7: case 8: case 9:
+    case 10: case 11: case 12:
+      return predio <= 12 ? 7 : 6;
+    case 13:
+      if (predio % 2 !== 0) return 8;          // ímpar: N8
+      return predio <= 12 ? 7 : 6;             // par 2–12: N7; par 16–48: N6
+    case 14: case 15: case 16: return 8;
+    case 18: case 19: return 7;
+    case 20:
+      if (predio % 2 !== 0 && predio <= 11) return 8; // ímpar 1–11: N8
+      return 7;
+    case 21: case 22: case 23:
+      return predio <= 12 ? 8 : 7;
+    case 24:
+      if (predio <= 12) return 8;
+      if (predio % 2 !== 0) return 8;           // ímpar 15–99: N8
+      return 7;                                  // par 16–100: N7
+    case 25: case 26: case 27: case 28: case 29: case 30: return 8;
+    default: return 7;
   }
+}
+
+// Retorna o máximo de apartamentos para a combinação rua/prédio/nível (regras rua a rua)
+function getMaxApartamento(rua, predio, nivel, tipoRua = 'padrao') {
   if (tipoRua === 'blocado') return 1;
   if (tipoRua === 'stage') return 1;
-  return 2;
+  switch(rua) {
+    case 1:
+      // N2+: 2 aptos. N1: ímpar=4; par 1–12 ou 28–48=4; resto par=2
+      if (nivel !== 1) return 2;
+      if (predio % 2 !== 0) return 4;
+      if (predio <= 12 || (predio >= 28 && predio <= 48)) return 4;
+      return 2;
+    case 2:
+      // N1: 4 (todos); N2+: 2
+      return nivel === 1 ? 4 : 2;
+    case 3:
+      // PAR: N1=4, N2+=2. ÍMPAR 1–11: 2. ÍMPAR 13–33: 2. ÍMPAR 35–99: 4 todos os níveis
+      if (predio % 2 === 0) return nivel === 1 ? 4 : 2;
+      if (predio >= 35) return 4;
+      return 2;
+    case 4:
+      // PAR 36–100, N1: 4; resto: 2
+      if (nivel === 1 && predio % 2 === 0 && predio >= 36) return 4;
+      return 2;
+    case 5: return 2;
+    case 6: case 7:
+      // pred 1–12, N1: 4; resto: 2
+      if (predio <= 12 && nivel === 1) return 4;
+      return 2;
+    case 8:
+      // pred 1–12: 4 todos os níveis; pred 15–88: 4 todos; pred 91–100: 2
+      if (predio <= 12) return 4;
+      if (predio <= 88) return 4;
+      return 2;
+    case 9:
+      // pred 1–12: 4 todos; pred 13+: 2
+      return predio <= 12 ? 4 : 2;
+    case 10: case 11:
+      // pred 1–48: 4 todos; pred 49+: 2
+      return predio <= 48 ? 4 : 2;
+    case 12:
+      // pred 1–12: 4; par 42,44,46,48: 4; resto: 2
+      if (predio <= 12) return 4;
+      if (predio % 2 === 0 && [42,44,46,48].includes(predio)) return 4;
+      return 2;
+    case 13:
+      // ímpar: 3 aptos; par 2–12: 4; par 16–48: 2
+      if (predio % 2 !== 0) return 3;
+      if (predio <= 12) return 4;
+      return 2;
+    case 14: case 15: case 16: return 3;
+    case 18:
+      // pred 2–48: 2; pred 52–100: N1–N2=4, N3+=2
+      if (predio <= 48) return 2;
+      return nivel <= 2 ? 4 : 2;
+    case 19:
+      // pred 1–48: 2; pred 52–100: N1–N2=4, N3+=2
+      if (predio <= 48) return 2;
+      return nivel <= 2 ? 4 : 2;
+    case 20:
+      if (predio % 2 === 0) {
+        // PAR 2–48: 2; PAR 52–100: N1–N2=4, N3+=2
+        if (predio <= 48) return 2;
+        return nivel <= 2 ? 4 : 2;
+      } else {
+        // ÍMPAR 1–69: 2; ÍMPAR 71–99: N1–N2=4, N3+=2
+        if (predio <= 69) return 2;
+        return nivel <= 2 ? 4 : 2;
+      }
+    default: return 2;
+  }
 }
 
 // ================== ESTADO GLOBAL ==================
@@ -507,6 +695,7 @@ let enderecoLinhas = {}; // key → Set de Descrição 1N dos SKUs que ocupam o 
 let linhasMap = {};
 let ruaLinhaMap = {};
 let cdLayout = {};
+let cdLayoutN1 = {};
 let occupiedSet = new Set();
 let catalog = [];
 let fornecedoresList = [];
@@ -682,6 +871,7 @@ function aplicarSnapshot(data, forcado) {
   renderActiveTasks();
   renderCompletedTasks();
   atualizarListaFornecedores();
+  verificarAutoFinalizacao();
   if(!forcado){
     var novas=tarefasAtivas.length-prev.ativas;
     var fin=tarefasFinalizadas.length-prev.finalizadas;
@@ -826,7 +1016,7 @@ function processar(){
 }
 
 function buildData(){
-  linhasMap={}; occupiedSet.clear(); cdLayout={}; catalog=[];
+  linhasMap={}; occupiedSet.clear(); cdLayout={}; cdLayoutN1={}; catalog=[];
   enderecoLinhas = {}; // índice: key → Set de Descrição 1N dos SKUs ocupantes
   const fornecedoresTemp=new Map(); const ruaStats={}; const seen=new Set();
   const prediosBloqueados = [13,14,49,50,89,90];
@@ -861,23 +1051,41 @@ function buildData(){
       if(forn && !fornecedoresTemp.has(forn)) fornecedoresTemp.set(forn,{cod,desc,linha1:l1,descLinha1:dl1});}
   });
   for(let rua of RUAS){
+    if(rua===17) continue; // Rua 17 não existe
     const stats=ruaStats[rua]; if(!stats) continue;
     for(let p=1;p<=stats.maxPred;p++){
       if(prediosBloqueados.includes(p)) continue;
       if(p>100) continue;
-      if(rua===16 && p%2!==0) continue; // Rua 16: apenas prédios PARES existem
-      for(let n=2;n<=7;n++){
+      // Restrições de lado (par/ímpar) e limite de prédio por rua
+      if(rua===4  && p%2!==0) continue; // Rua 4:  apenas prédios PARES
+      if(rua===4  && p===51)  continue; // Rua 4:  prédio 51 bloqueado
+      if(rua===16 && p%2!==0) continue; // Rua 16: apenas prédios PARES
+      if(rua===16 && p>38)    continue; // Rua 16: encerra no prédio 38
+      if(rua===18 && p%2!==0) continue; // Rua 18: apenas prédios PARES
+      if(rua===30 && p%2!==0) continue; // Rua 30: apenas prédios PARES
+      if((rua===14||rua===15) && p>38) continue; // Ruas 14–15: encerram no prédio 38
+      if(rua===13 && p%2===0 && p>48)  continue; // Rua 13 PAR: encerra no prédio 48
+      const maxNivelRua = getMaxNivel(rua, p);
+      const minNivelRua = getMinNivel(rua, p);
+      for(let n=minNivelRua;n<=maxNivelRua;n++){
         const tipo=tiposRua[rua]||'porta_palete';
         const maxAptoPermitido=getMaxApartamento(rua,p,n,tipo);
         const maxApto=Math.min(stats.maxApto, maxAptoPermitido);
-        for(let a=1;a<=maxApto;a++) cdLayout[`${rua}|${p}|${n}|${a}`]=true;
+        for(let a=1;a<=maxApto;a++){
+          const key=`${rua}|${p}|${n}|${a}`;
+          if(n===1) cdLayoutN1[key]=true;
+          else cdLayout[key]=true;
+        }
       }
     }
   }
   const freeKeys=Object.keys(cdLayout).filter(k=>!occupiedSet.has(k));
+  const freeN1Keys=Object.keys(cdLayoutN1).filter(k=>!occupiedSet.has(k));
   const ruasLivres=new Set(freeKeys.map(k=>k.split('|')[0])).size;
-  const ocup=Object.keys(cdLayout).length?Math.round(occupiedSet.size/Object.keys(cdLayout).length*100):0;
+  const totalEnderecos=Object.keys(cdLayout).length+Object.keys(cdLayoutN1).length;
+  const ocup=totalEnderecos?Math.round(occupiedSet.size/totalEnderecos*100):0;
   const elLivres=document.getElementById('kpi-livres');if(elLivres)elLivres.textContent=freeKeys.length.toLocaleString('pt-BR');
+  const elLivresN1=document.getElementById('kpi-livres-n1');if(elLivresN1)elLivresN1.textContent=freeN1Keys.length.toLocaleString('pt-BR');
   const elRuas=document.getElementById('kpi-ruas');if(elRuas)elRuas.textContent=ruasLivres;
   const elOcup=document.getElementById('kpi-ocup');if(elOcup)elOcup.textContent=ocup+'%';
   const fornecedoresPlanilha=Array.from(fornecedoresTemp.entries()).map(([nome,info])=>({nome,codigoExemplo:info.cod,descExemplo:info.desc,linha1:info.linha1,descLinha1:info.descLinha1})).sort((a,b)=>a.nome.localeCompare(b.nome));
@@ -1185,6 +1393,71 @@ function reconstruirViaCegaMapFromDetalhamento() {
   console.log('viaCegaMap reconstruído:', viaCegaMap.size, 'vias,', Array.from(viaCegaMap.values()).reduce((s,v)=>s+v.length,0), 'UMAs únicas');
 }
 
+let _auditFiltro    = 'todas';
+let _auditDataFiltro = '';
+let _auditPctFiltro  = '';
+function setAuditData(val) {
+  _auditDataFiltro = val;
+  _auditPctFiltro  = '';
+  const btn = document.getElementById('btn-audit-limpar-data');
+  if(btn) btn.style.opacity = val ? '1' : '0';
+  renderAuditoria();
+}
+function setAuditPctFiltro(f) {
+  _auditPctFiltro = _auditPctFiltro === f ? '' : f;
+  renderAuditoria();
+}
+function setAuditFiltro(f) {
+  _auditFiltro = f;
+  ['todas','ativas','finalizadas'].forEach(k => {
+    const btn = document.getElementById('audit-btn-'+k);
+    if(btn) btn.classList.toggle('active', k===f);
+  });
+  renderAuditoria();
+}
+
+// Finaliza uma tarefa ativa sem confirmação manual (chamada pela auditoria automática)
+function finalizarTarefaAutomatico(taskId, viaNr) {
+  const idx = tarefasAtivas.findIndex(t => t.id === taskId);
+  if (idx === -1) return;
+  const task = tarefasAtivas[idx];
+  const finishedAt = Date.now();
+  task.finishedAt = finishedAt;
+  task.totalSeconds = Math.floor((finishedAt - (task.createdAt || finishedAt)) / 1000);
+  task.finalizadoPorAuditoria = true;
+  tarefasAtivas.splice(idx, 1);
+  tarefasFinalizadas.push(task);
+  task.alocacao.forEach(a => a.enderecos.forEach(e => finalizedAddressesSet.add(e.key)));
+  atualizarReservedAddresses();
+  renderActiveTasks();
+  renderCompletedTasks();
+  salvarDados();
+  showToast('✅ Via ' + viaNr + ' finalizada automaticamente — 100% endereçada.');
+}
+
+// Verifica todas as ordens ativas: se a via estiver 100% endereçada, finaliza automaticamente
+function verificarAutoFinalizacao() {
+  if (!rawRowsEnd.length || !tarefasAtivas.length) return;
+  const umasByVia = buildUMAsByViaFromEnd();
+  if (!umasByVia.size) return;
+  const toFinalize = [];
+  for (const task of tarefasAtivas) {
+    const via = String(task.reg.via || '').trim();
+    if (!via) continue;
+    // Encontra a chave da via (nr|codEmpresa) no mapa
+    let chave = '';
+    for (const [k] of viaCegaMap) { if (k.startsWith(via + '|')) { chave = k; break; } }
+    if (!chave) { for (const [k] of umasByVia) { if (k.startsWith(via + '|')) { chave = k; break; } } }
+    if (!chave) continue;
+    const umasVia = umasByVia.get(chave) || [];
+    if (!umasVia.length) continue;
+    // Pendente = status diferente de "Endereçada" OU endereço vazio
+    const pendentes = umasVia.filter(u => u.status !== 'Endereçada' || !u.endereco).length;
+    if (pendentes === 0) toFinalize.push({ id: task.id, via });
+  }
+  toFinalize.forEach(({ id, via }) => finalizarTarefaAutomatico(id, via));
+}
+
 function renderAuditoria() {
   // Atualiza info das planilhas importadas
   if (rawRowsVC.length > 0) {
@@ -1203,6 +1476,8 @@ function renderAuditoria() {
   const container = document.getElementById('auditoria-lista-container');
   if (!container) return;
 
+  // Finaliza automaticamente vias 100% endereçadas antes de renderizar
+  verificarAutoFinalizacao();
   const viasAtivas = tarefasAtivas.map(t => ({ via: String(t.reg.via||'').trim(), status: 'ativo', tarefa: t }));
   const viasFinalizadas = tarefasFinalizadas.map(t => ({ via: String(t.reg.via||'').trim(), status: 'finalizado', tarefa: t }));
   const todasOrdens = [...viasAtivas, ...viasFinalizadas].filter(v => v.via);
@@ -1221,124 +1496,150 @@ function renderAuditoria() {
     if (item.status === 'ativo') porVia.get(item.via).status = 'ativo';
   }
 
-  const emAndamento = [], finalizadas = [];
+  let emAndamento = [], finalizadas = [];
   for (const [, v] of porVia) {
     if (v.status === 'ativo') emAndamento.push(v);
     else finalizadas.push(v);
   }
 
+  // Pré-computa estatísticas (evita cálculo duplo e permite ordenação)
+  function computeStats(item) {
+    const { via, tarefas } = item;
+    const endSugeridosSet = new Set();
+    for (const tarefa of tarefas) {
+      (tarefa.alocacao || []).forEach(aloc => (aloc.enderecos || []).forEach(e => endSugeridosSet.add(e.key)));
+    }
+    let chaveEncontrada = '';
+    for (const [chave] of viaCegaMap) { if (chave.startsWith(via + '|')) { chaveEncontrada = chave; break; } }
+    if (!chaveEncontrada) { for (const [chave] of umasByVia) { if (chave.startsWith(via + '|')) { chaveEncontrada = chave; break; } } }
+    const umasVia = chaveEncontrada ? (umasByVia.get(chaveEncontrada) || []) : [];
+    const totalUMAs = umasVia.length;
+    let corretas = 0, incorretas = 0, pendentes = 0;
+    const listaCorretas = [], listaIncorretas = [], listaPendentes = [];
+    for (const u of umasVia) {
+      const statusUMA = u.status; const endUMA = u.endereco || '';
+      if (statusUMA === 'Endereçada' && endUMA) {
+        if (enderecoMatch(endUMA, endSugeridosSet)) { corretas++; listaCorretas.push(u); }
+        else { incorretas++; listaIncorretas.push(u); }
+      } else { pendentes++; listaPendentes.push(u); }
+    }
+    const semDados = totalUMAs === 0;
+    const pct = semDados ? null : Math.round(((corretas + incorretas) / totalUMAs) * 100);
+    item._s = { chaveEncontrada, umasVia, totalUMAs, corretas, incorretas, pendentes, listaCorretas, listaIncorretas, listaPendentes, semDados, pct };
+  }
+  emAndamento.forEach(computeStats);
+  finalizadas.forEach(computeStats);
+
+  // Ordena por data de criação — mais antigas primeiro
+  const sortByDate = (a, b) => {
+    const ta = a.tarefas[0].createdAt || 0;
+    const tb = b.tarefas[0].createdAt || 0;
+    return ta - tb;
+  };
+  emAndamento.sort(sortByDate);
+  finalizadas.sort(sortByDate);
+
+  // ── Filtro por data de criação ──────────────────────────────────────────────
+  const _dataF = typeof _auditDataFiltro !== 'undefined' ? _auditDataFiltro : '';
+  if (_dataF) {
+    const byDate = item => {
+      const t = item.tarefas[0];
+      if (!t.createdAt) return false;
+      const d = new Date(t.createdAt);
+      const dl = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+      return dl === _dataF;
+    };
+    emAndamento = emAndamento.filter(byDate);
+    finalizadas = finalizadas.filter(byDate);
+  }
+
+  // ── KPI summary interativo ───────────────────────────────────────────────────
+  const _todosKpi = [...emAndamento, ...finalizadas];
+  const kpiCompl  = _todosKpi.filter(i => i._s.pct === 100).length;
+  const kpiParc   = _todosKpi.filter(i => i._s.pct !== null && i._s.pct > 0 && i._s.pct < 100).length;
+  const kpiPend   = _todosKpi.filter(i => i._s.pct === null || i._s.pct === 0).length;
+  const kpiTotal  = _todosKpi.length;
+  const _pctF     = typeof _auditPctFiltro !== 'undefined' ? _auditPctFiltro : '';
+  const labelDia  = _dataF ? (() => { const [yy,mm,dd] = _dataF.split('-'); return ' · '+dd+'/'+mm; })() : '';
+  const kpiSummaryEl = document.getElementById('audit-kpi-summary');
+  if (kpiSummaryEl) {
+    const kCard = (cat, lbl, val, cor, sub) => {
+      const active = cat === '' ? !_pctF : _pctF === cat;
+      const bg = active ? 'var(--blue)' : 'var(--surface)';
+      const bd = active ? 'var(--blue)' : 'var(--border2)';
+      const vc = active ? '#fff' : cor;
+      const lc = active ? 'rgba(255,255,255,.72)' : 'var(--muted2)';
+      const sc = active ? 'rgba(255,255,255,.58)' : 'var(--muted)';
+      return `<div onclick="setAuditPctFiltro('${cat}')" style="cursor:pointer;background:${bg};border:1.5px solid ${bd};border-radius:10px;padding:12px 10px;box-shadow:var(--shadow-sm);transition:all .15s;text-align:center;" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shadow-md)'" onmouseleave="this.style.transform='';this.style.boxShadow='var(--shadow-sm)'"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.8px;font-weight:700;color:${lc};margin-bottom:4px;">${lbl}</div><div style="font-size:24px;font-weight:700;font-family:'DM Mono',monospace;line-height:1;color:${vc};">${val}</div><div style="font-size:9px;color:${sc};margin-top:3px;">${sub}</div></div>`;
+    };
+    kpiSummaryEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;">${kCard('','Total',kpiTotal,'var(--text)','vias'+labelDia)}${kCard('completo','100% end.',kpiCompl,'var(--fc-green)','endereçadas')}${kCard('parcial','Parcial',kpiParc,'var(--amber)','em progresso')}${kCard('pendente','Pendente',kpiPend,'var(--fc-red)','sem dados / 0%')}</div>`;
+  }
+
+  // ── Filtro por categoria de % endereçado ────────────────────────────────────
+  if (_pctF) {
+    const byPct = item => {
+      if (_pctF === 'completo') return item._s.pct === 100;
+      if (_pctF === 'parcial')  return item._s.pct !== null && item._s.pct > 0 && item._s.pct < 100;
+      if (_pctF === 'pendente') return item._s.pct === null || item._s.pct === 0;
+      return true;
+    };
+    emAndamento = emAndamento.filter(byPct);
+    finalizadas = finalizadas.filter(byPct);
+  }
+
+  // ── Filtro de aba (Todas / Em andamento / Finalizadas) ──────────────────────
+  const filtro = typeof _auditFiltro !== 'undefined' ? _auditFiltro : 'todas';
+
   function buildCard(item) {
-    const { via, status, tarefas } = item;
+    const { via, status, tarefas, _s } = item;
     const t = tarefas[0];
     const forn = t.reg.forn || '—';
     const emp  = t.reg.emp  || '—';
+    const mat  = t.reg.mat  ? ' · Mat. ' + escapeHtml(String(t.reg.mat)) : '';
     const paletesOrdem = t.reg.paletes || 0;
-
-    // Endereços sugeridos pela ordem (todas as tarefas desta via)
-    const endSugeridosSet = new Set();
-    for (const tarefa of tarefas) {
-      (tarefa.alocacao || []).forEach(aloc => {
-        (aloc.enderecos || []).forEach(e => endSugeridosSet.add(e.key));
-      });
-    }
-
-    // Busca chave da via no mapa (por nr da via, qualquer cod empresa)
-    let chaveEncontrada = '';
-    for (const [chave] of viaCegaMap) {
-      if (chave.startsWith(via + '|')) { chaveEncontrada = chave; break; }
-    }
-    if (!chaveEncontrada) {
-      for (const [chave] of umasByVia) {
-        if (chave.startsWith(via + '|')) { chaveEncontrada = chave; break; }
-      }
-    }
-
-    const umasVia = chaveEncontrada ? (umasByVia.get(chaveEncontrada) || []) : [];
-    const totalUMAs = umasVia.length;
-
-    // Categoriza cada UMA
-    let corretas = 0, incorretas = 0, pendentes = 0;
-    const listaCorretas = [], listaIncorretas = [], listaPendentes = [];
-
-    for (const u of umasVia) {
-      const statusUMA = u.status;
-      const endUMA = u.endereco || '';
-      if (statusUMA === 'Endereçada' && endUMA) {
-        // Normaliza o endereço da UMA para comparar com as chaves sugeridas
-        // Chave sugerida: "rua|predio|nivel|apto" — endereço no detalhamento: "01-086-008"
-        // Tenta comparar direto e também pelo formato da chave
-        const match = enderecoMatch(endUMA, endSugeridosSet);
-        if (match) { corretas++; listaCorretas.push(u); }
-        else { incorretas++; listaIncorretas.push(u); }
-      } else if (statusUMA !== 'Endereçada') {
-        pendentes++; listaPendentes.push(u);
-      } else {
-        // Endereçada mas sem endereço registrado — trata como pendente
-        pendentes++; listaPendentes.push(u);
-      }
-    }
-
-    // Divergência: paletes da ordem vs total de UMAs da via
+    const criadoStr = t.createdAt
+      ? new Date(t.createdAt).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' às ' + new Date(t.createdAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})
+      : '';
+    const { chaveEncontrada, totalUMAs, corretas, incorretas, pendentes, semDados, pct } = _s;
     const divergente = totalUMAs > 0 && paletesOrdem !== totalUMAs;
 
     const badgeStatus = status === 'ativo'
       ? '<span style="background:#fef3c7;color:#92400e;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;">⏳ EM ANDAMENTO</span>'
       : '<span style="background:#dcfce7;color:#166534;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;">✅ FINALIZADA</span>';
-
     const badgeDiverg = divergente
       ? `<span style="background:#fee2e2;color:#991b1b;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;">⚠️ DIVERGENTE (${paletesOrdem} paletes × ${totalUMAs} UMAs)</span>`
       : '';
-
-    const semDados = totalUMAs === 0;
-    const pct = semDados ? null : Math.round(((corretas + incorretas) / totalUMAs) * 100);
     const corPct = pct === null ? 'var(--muted2)' : pct === 100 ? 'var(--fc-green)' : pct >= 50 ? 'var(--amber,#f59e0b)' : 'var(--fc-red)';
 
-    const barraHtml = semDados ? `<div style="font-size:11px;color:var(--muted2);margin:10px 0;">⚠️ Importe as planilhas de Vias Cegas e Endereços para ver o detalhamento das UMAs.</div>`
-      : `<div style="margin:10px 0 4px;">
-          <div style="background:var(--surface3);border-radius:99px;height:8px;overflow:hidden;position:relative;">
-            <div style="height:100%;width:${Math.round((corretas/totalUMAs)*100)}%;background:var(--fc-green);border-radius:99px 0 0 99px;display:inline-block;"></div><div style="height:100%;width:${Math.round((incorretas/totalUMAs)*100)}%;background:var(--amber,#f59e0b);display:inline-block;"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted2);margin-top:3px;">
-            <span>✅ ${corretas} corretas</span><span style="color:var(--amber,#f59e0b);">⚠️ ${incorretas} incorretas</span><span style="color:var(--fc-red);">⏳ ${pendentes} pendentes</span><span style="font-weight:700;color:${corPct};">${pct}% end.</span>
-          </div>
-        </div>`;
+    const barraHtml = semDados
+      ? `<div style="font-size:11px;color:var(--muted2);margin:10px 0;">⚠️ Importe as planilhas de Vias Cegas e Endereços para ver o detalhamento das UMAs.</div>`
+      : `<div style="margin:10px 0 4px;"><div style="background:var(--surface3);border-radius:99px;height:8px;overflow:hidden;position:relative;"><div style="height:100%;width:${Math.round((corretas/totalUMAs)*100)}%;background:var(--fc-green);border-radius:99px 0 0 99px;display:inline-block;"></div><div style="height:100%;width:${Math.round((incorretas/totalUMAs)*100)}%;background:var(--amber,#f59e0b);display:inline-block;"></div></div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted2);margin-top:3px;"><span>✅ ${corretas} corretas</span><span style="color:var(--amber,#f59e0b);">⚠️ ${incorretas} incorretas</span><span style="color:var(--fc-red);">⏳ ${pendentes} pendentes</span><span style="font-weight:700;color:${corPct};">${pct}% end.</span></div></div>`;
 
-    const btns = semDados ? '' : `
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
-        <button onclick="abrirModalAuditoria('${escapeHtml(chaveEncontrada)}','corretas')" style="background:var(--fc-green);color:#fff;border:none;border-radius:7px;padding:7px 13px;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">✅ ${corretas} corretas</button>
-        <button onclick="abrirModalAuditoria('${escapeHtml(chaveEncontrada)}','incorretas')" style="background:var(--amber,#f59e0b);color:#fff;border:none;border-radius:7px;padding:7px 13px;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">⚠️ ${incorretas} incorretas</button>
-        <button onclick="abrirModalAuditoria('${escapeHtml(chaveEncontrada)}','pendentes')" style="background:var(--fc-red);color:#fff;border:none;border-radius:7px;padding:7px 13px;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">⏳ ${pendentes} pendentes</button>
-        <button onclick="abrirModalAuditoria('${escapeHtml(chaveEncontrada)}','all')" style="background:var(--surface3);color:var(--text);border:1.5px solid var(--border2);border-radius:7px;padding:7px 13px;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">📋 Ver todas (${totalUMAs})</button>
-        <button onclick="exportarViaExcel('${escapeHtml(chaveEncontrada)}','${escapeHtml(via)}')" style="background:#166534;color:#fff;border:none;border-radius:7px;padding:7px 13px;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">📥 Excel</button>
-      </div>`;
+    const btns = semDados ? '' : `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;"><button onclick="abrirModalAuditoria('${escapeHtml(chaveEncontrada)}','corretas')" style="background:var(--fc-green);color:#fff;border:none;border-radius:7px;padding:7px 13px;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">✅ ${corretas} corretas</button><button onclick="abrirModalAuditoria('${escapeHtml(chaveEncontrada)}','incorretas')" style="background:var(--amber,#f59e0b);color:#fff;border:none;border-radius:7px;padding:7px 13px;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">⚠️ ${incorretas} incorretas</button><button onclick="abrirModalAuditoria('${escapeHtml(chaveEncontrada)}','pendentes')" style="background:var(--fc-red);color:#fff;border:none;border-radius:7px;padding:7px 13px;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">⏳ ${pendentes} pendentes</button><button onclick="abrirModalAuditoria('${escapeHtml(chaveEncontrada)}','all')" style="background:var(--surface3);color:var(--text);border:1.5px solid var(--border2);border-radius:7px;padding:7px 13px;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">📋 Ver todas (${totalUMAs})</button><button onclick="exportarViaExcel('${escapeHtml(chaveEncontrada)}','${escapeHtml(via)}')" style="background:#166534;color:#fff;border:none;border-radius:7px;padding:7px 13px;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">📥 Excel</button></div>`;
 
-    return `<div class="card" style="margin-bottom:10px;">
-      <div class="card-body" style="padding:12px 14px;">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-          <div>
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
-              <span style="font-size:16px;font-weight:800;font-family:'DM Mono',monospace;">Via ${escapeHtml(via)}</span>
-              ${badgeStatus} ${badgeDiverg}
-            </div>
-            <div style="font-size:12px;color:var(--muted2);">🏢 ${escapeHtml(forn)} &nbsp;·&nbsp; 🏗️ ${escapeHtml(emp)}</div>
-          </div>
-          <div style="text-align:right;flex-shrink:0;">
-            ${!semDados ? `<div style="font-size:26px;font-weight:800;color:${corPct};line-height:1;">${pct}%</div><div style="font-size:10px;color:var(--muted2);">${totalUMAs} UMAs · ${paletesOrdem} paletes</div>` : ''}
-          </div>
-        </div>
-        ${barraHtml}${btns}
-      </div>
-    </div>`;
+    return `<div class="card" style="margin-bottom:10px;"><div class="card-body" style="padding:12px 14px;"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;"><div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;"><span style="font-size:16px;font-weight:800;font-family:'DM Mono',monospace;">Via ${escapeHtml(via)}</span>${badgeStatus} ${badgeDiverg}</div><div style="font-size:12px;color:var(--muted2);">🏢 ${escapeHtml(forn)} &nbsp;·&nbsp; 🏗️ ${escapeHtml(emp)}${mat}</div>${criadoStr?`<div style="font-size:10px;color:var(--muted2);margin-top:3px;">📅 Criado em: <strong style="color:var(--text)">${criadoStr}</strong></div>`:''}</div><div style="text-align:right;flex-shrink:0;">${!semDados?`<div style="font-size:26px;font-weight:800;color:${corPct};line-height:1;">${pct}%</div><div style="font-size:10px;color:var(--muted2);">${totalUMAs} UMAs · ${paletesOrdem} paletes</div>`:''}</div></div>${barraHtml}${btns}</div></div>`;
   }
 
+  // Monta o HTML conforme o filtro activo
+  const msgVazia = { todas:'Nenhuma ordem de armazenagem encontrada.', ativas:'Nenhuma via cega em andamento.', finalizadas:'Nenhuma via cega finalizada.' };
   let html = '';
-  if (emAndamento.length) {
-    html += `<div style="font-size:11px;font-weight:700;color:var(--muted2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;margin-top:4px;">⏳ Em Andamento (${emAndamento.length})</div>`;
-    html += emAndamento.map(buildCard).join('');
-  }
-  if (finalizadas.length) {
-    html += `<div style="font-size:11px;font-weight:700;color:var(--muted2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;margin-top:${emAndamento.length?16:4}px;">✅ Finalizadas (${finalizadas.length})</div>`;
-    html += finalizadas.map(buildCard).join('');
+  if (filtro === 'todas') {
+    if (emAndamento.length) {
+      html += `<div style="font-size:11px;font-weight:700;color:var(--muted2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;margin-top:4px;">⏳ Em Andamento (${emAndamento.length})</div>`;
+      html += emAndamento.map(buildCard).join('');
+    }
+    if (finalizadas.length) {
+      html += `<div style="font-size:11px;font-weight:700;color:var(--muted2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;margin-top:${emAndamento.length?16:4}px;">✅ Finalizadas (${finalizadas.length})</div>`;
+      html += finalizadas.map(buildCard).join('');
+    }
+    if (!html) html = `<div class="empty" style="padding:40px 0"><div class="empty-ico">📋</div><p>${msgVazia.todas}</p></div>`;
+  } else {
+    const lista = filtro === 'ativas' ? emAndamento : finalizadas;
+    if (lista.length) {
+      html = lista.map(buildCard).join('');
+    } else {
+      html = `<div class="empty" style="padding:40px 0"><div class="empty-ico">📋</div><p>${msgVazia[filtro]}</p></div>`;
+    }
   }
   container.innerHTML = html;
 }
@@ -1729,6 +2030,38 @@ function exportarAuditoriaExcel() {
   XLSX.writeFile(wb, nomeArq);
 }
 
+function exportarEndereçosLivres() {
+  if (!Object.keys(cdLayout).length && !Object.keys(cdLayoutN1).length) {
+    showToast('Importe a planilha de endereços primeiro.'); return;
+  }
+  const sortKeys = (a, b) => {
+    const [r1,p1,n1,a1] = a.split('|').map(Number);
+    const [r2,p2,n2,a2] = b.split('|').map(Number);
+    return r1!==r2?r1-r2:p1!==p2?p1-p2:n1!==n2?n1-n2:a1-a2;
+  };
+  // Aba N2+
+  const rowsN2 = [['Rua','Prédio','Nível','Apto','Endereço']];
+  Object.keys(cdLayout).filter(k=>!occupiedSet.has(k)).sort(sortKeys).forEach(k=>{
+    const [rua,pred,nivel,apto]=k.split('|').map(Number);
+    rowsN2.push([rua,pred,nivel,apto,formatFullAddress(rua,pred,nivel,apto)]);
+  });
+  // Aba N1 (picking)
+  const rowsN1 = [['Rua','Prédio','Nível','Apto','Endereço']];
+  Object.keys(cdLayoutN1).filter(k=>!occupiedSet.has(k)).sort(sortKeys).forEach(k=>{
+    const [rua,pred,nivel,apto]=k.split('|').map(Number);
+    rowsN1.push([rua,pred,nivel,apto,formatFullAddress(rua,pred,nivel,apto)]);
+  });
+  const colW = [{wch:6},{wch:8},{wch:8},{wch:6},{wch:22}];
+  const wb = XLSX.utils.book_new();
+  const wsN2 = XLSX.utils.aoa_to_sheet(rowsN2); wsN2['!cols']=colW;
+  XLSX.utils.book_append_sheet(wb, wsN2, 'Livres N2+');
+  const wsN1 = XLSX.utils.aoa_to_sheet(rowsN1); wsN1['!cols']=colW;
+  XLSX.utils.book_append_sheet(wb, wsN1, 'Livres N1 (Picking)');
+  const dt = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
+  XLSX.writeFile(wb, `Enderecos_Livres_${dt}.xlsx`);
+  showToast('✅ Exportação concluída — ' + (rowsN2.length-1) + ' livres N2+ · ' + (rowsN1.length-1) + ' livres N1.');
+}
+
 // Versão usada dentro da transação Firebase (recebe sets externos)
 // Iteração determinística: rua → prédio crescente → nível crescente → apto crescente
 function coletarEnderecosPorPredioTx(ruasValidas, nivelMin, nivelMax, reservedSet, finalizedSet) {
@@ -1929,14 +2262,31 @@ function imprimirTarefa(task){
 function renderActiveTasks(){
   const container=document.getElementById('tasks-ativas-container');
   if(!container)return;
-  if(tarefasAtivas.length===0){container.innerHTML='<div class="empty"><div class="empty-ico">📭</div><p>Nenhuma via cega em andamento.</p></div>'; return;}
   const keyTaskMap={};
   tarefasAtivas.forEach(t=>{t.alocacao.forEach(a=>a.enderecos.forEach(e=>{if(!keyTaskMap[e.key])keyTaskMap[e.key]=[];keyTaskMap[e.key].push(t.id);}));});
   const conflictKeys=new Set(Object.keys(keyTaskMap).filter(k=>keyTaskMap[k].length>1));
-  const elConf=document.getElementById('kpi-conflitos');if(elConf)elConf.textContent=conflictKeys.size;
-  const elAtivas=document.getElementById('kpi-ativas');if(elAtivas)elAtivas.textContent=tarefasAtivas.length;
   const badge=document.getElementById('badge-ativas');if(badge){badge.textContent=tarefasAtivas.length; badge.style.display=tarefasAtivas.length>0?'inline-block':'none';}
-  container.innerHTML=tarefasAtivas.map(task=>{
+  const dataFAtivas=document.getElementById('ativas-filter-data')?.value||'';
+  const btnLimparAtivas=document.getElementById('btn-limpar-data-ativas');
+  if(btnLimparAtivas)btnLimparAtivas.style.opacity=dataFAtivas?'1':'0';
+  const tarefasFiltradas=dataFAtivas?tarefasAtivas.filter(t=>{if(!t.createdAt)return false;const d=new Date(t.createdAt);const dl=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');return dl===dataFAtivas;}):tarefasAtivas;
+  // KPIs — todos respondem ao filtro de data
+  const kpiOrdens=tarefasFiltradas.length;
+  const kpiPaletes=tarefasFiltradas.reduce((s,t)=>s+t.reg.paletes,0);
+  const kpiEmps=new Set(tarefasFiltradas.map(t=>t.reg.mat||t.reg.emp).filter(Boolean)).size;
+  const kpiEnderecos=tarefasFiltradas.reduce((s,t)=>s+t.alocacao.reduce((ss,a)=>ss+a.enderecos.length,0),0);
+  const kpiFaltam=tarefasFiltradas.filter(t=>t.faltam>0).length;
+  const elConf=document.getElementById('kpi-conflitos');if(elConf)elConf.textContent=conflictKeys.size;
+  const elAtivas=document.getElementById('kpi-ativas');if(elAtivas)elAtivas.textContent=kpiOrdens;
+  const elAtivasSub=document.getElementById('kpi-ativas-sub');if(elAtivasSub)elAtivasSub.textContent=dataFAtivas?'no dia filtrado':'em andamento';
+  const elPaletes=document.getElementById('kpi-paletes-ativas');if(elPaletes)elPaletes.textContent=kpiPaletes;
+  const elEmps=document.getElementById('kpi-emps-ativas');if(elEmps)elEmps.textContent=kpiEmps;
+  const elEnderecos=document.getElementById('kpi-enderecos-ativas');if(elEnderecos)elEnderecos.textContent=kpiEnderecos;
+  const elFaltam=document.getElementById('kpi-faltam-ativas');if(elFaltam)elFaltam.textContent=kpiFaltam;
+  const elKpiLabel=document.getElementById('ativas-kpi-label');
+  if(elKpiLabel){if(dataFAtivas){const [yy,mm,dd]=dataFAtivas.split('-');elKpiLabel.textContent='📅 '+dd+'/'+mm+'/'+yy;elKpiLabel.style.display='';}else elKpiLabel.style.display='none';}
+  if(tarefasFiltradas.length===0){container.innerHTML=tarefasAtivas.length===0?'<div class="empty"><div class="empty-ico">📭</div><p>Nenhuma via cega em andamento.</p></div>':'<div class="empty"><div class="empty-ico">📅</div><p>Nenhuma ordem criada nesta data.</p></div>'; return;}
+  container.innerHTML=tarefasFiltradas.map(task=>{
     const{id,prod,reg,alocacao,totalAlocados,faltam,createdAt,createdBy}=task;
     const minimized = getVisual(id,'minimized',false); // #4: estado visual local
     const elapsed=Math.floor((Date.now()-createdAt)/1000);
@@ -1944,26 +2294,29 @@ function renderActiveTasks(){
     const timerClass=elapsed>2400?'overdue':elapsed>1200?'warn':'';
     const cardClass=elapsed>2400?'overdue':elapsed>1200?'warn-time':'';
     const taskConflicts=alocacao.flatMap(a=>a.enderecos).filter(e=>conflictKeys.has(e.key)).length;
-    const conflictWarnHtml=taskConflicts>0?`<div class="conflict-warn">⚠️ ${taskConflicts} endereço(s) em conflito com outra tarefa ativa</div>`:'';
-    let bodyHtml=`<div class="task-body ${minimized?'minimized':''}" id="task-body-${id}"><div class="prod-bar"><div class="prod-bar-cod">${prod.cod}</div><div class="prod-bar-name">${prod.desc}</div><div class="prod-tags"><span class="prod-tag">Linha ${prod.descLinha1}</span><span class="prod-tag green">Níveis: ${reg.nivelMin} a ${reg.nivelMax}</span></div></div>${conflictWarnHtml}<div class="res-hdr" style="padding:0 16px;margin-top:12px"><div><div class="res-ttl">Endereços sugeridos</div><div class="res-sub">${reg.paletes} palete(s)</div></div><span class="badge ${totalAlocados===reg.paletes?'green':'red'}">${totalAlocados}/${reg.paletes}</span></div>`;
-    if(totalAlocados===0){bodyHtml+=`<div class="empty"><div class="empty-ico">😔</div><p>Sem endereços disponíveis para esta linha com nível entre ${reg.nivelMin} e ${reg.nivelMax}.</p></div>`;}
-    else{
-      for(let aloc of alocacao){
+    // Progress
+    const progPct=reg.paletes>0?Math.round((totalAlocados/reg.paletes)*100):0;
+    const progNumClass=totalAlocados===reg.paletes?'':totalAlocados===0?'tc2-zero':'tc2-partial';
+    const progBarClass=totalAlocados===reg.paletes?'':'partial';
+    const criadoStr=createdAt?new Date(createdAt).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' às '+new Date(createdAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'';
+    // Endereços como chips por rua
+    let addrBlocksHtml='';
+    if(totalAlocados===0){
+      addrBlocksHtml=`<div class="empty" style="padding:12px 0;"><div class="empty-ico" style="font-size:22px">😔</div><p>Sem endereços disponíveis (Nível ${reg.nivelMin}–${reg.nivelMax}).</p></div>`;
+    } else {
+      for(const aloc of alocacao){
         const rua=aloc.rua;
         const linhaNome=(Array.isArray(ruaLinhaMap[rua])?ruaLinhaMap[rua]:[ruaLinhaMap[rua]]).map(k=>linhasMap[k]||k).join(' + ');
-        bodyHtml+=`<div class="card" style="margin:12px 16px;"><div class="card-hdr"><div class="card-ico green">🏢</div><div><div class="card-ttl">RUA ${String(rua).padStart(2,'0')}</div><div class="card-sub">${linhaNome} · ${aloc.alocados} de ${aloc.totalDisponivel}</div></div></div><div class="card-body" style="padding:0">`;
-        aloc.enderecos.forEach((addr,idx)=>{
-          const isConflict=conflictKeys.has(addr.key);
-          bodyHtml+=`<div class="addr-item"><div class="addr-num">${idx+1}</div><div><div class="addr-code ${isConflict?'addr-conflict':''}">${formatFullAddress(addr.rua,addr.pred,addr.nivel,addr.apto)}</div><div class="addr-detail">Prédio ${addr.pred} · Nível ${addr.nivel} · Apto ${addr.apto}${isConflict?' ⚠️ conflito':''}</div></div><span class="addr-nivel">N${addr.nivel}</span></div>`;
-        });
-        bodyHtml+=`</div></div>`;
+        const chips=aloc.enderecos.map(addr=>{
+          const ic=conflictKeys.has(addr.key);
+          return `<span class="tc2-chip${ic?' tc2-chip-conflict':''}">${formatFullAddress(addr.rua,addr.pred,addr.nivel,addr.apto)}<span class="tc2-chip-lvl">N${addr.nivel}</span></span>`;
+        }).join('');
+        addrBlocksHtml+=`<div class="tc2-rua-block"><div class="tc2-rua-hdr"><span class="tc2-rua-num">RUA ${String(rua).padStart(2,'0')}</span><span class="tc2-rua-sub">${escapeHtml(linhaNome)}</span><span class="tc2-rua-cnt">${aloc.alocados}<span style="font-weight:400;opacity:.6">/${aloc.totalDisponivel}</span></span></div><div class="tc2-chips">${chips}</div></div>`;
       }
-      if(faltam>0)bodyHtml+=`<div class="card-body" style="margin:0 16px 12px;background:var(--amber-bg);text-align:center;border-radius:8px;padding:10px;">⚠️ Faltam ${faltam} palete(s).</div>`;
     }
-    bodyHtml+=`<div class="task-actions"><button class="action-btn confirm" onclick="confirmarTarefa(${id})">✅ Confirmar</button><button class="action-btn cancel" onclick="cancelarTarefa(${id})">❌ Cancelar</button><button class="action-btn edit" onclick="editarTarefa(${id})">✏️ Editar</button><button class="print-task-btn" onclick="imprimirTarefaPorId(${id}, true)">🖨️ Imprimir</button></div></div>`;
-    const toggleIcon=minimized?'▼':'▲';
-    const criadoPor = createdBy ? `<span style="font-size:9px;color:var(--muted2);margin-left:4px">por ${escapeHtml(createdBy)}</span>` : '';
-    return `<div class="task-card ${cardClass}" id="tc-${id}"><div class="task-header" onclick="toggleMinimize(${id})"><div class="task-header-left"><span class="task-badge">Via C: ${reg.via}</span><span class="task-title">${reg.forn} - ${reg.emp}</span>${criadoPor}<span class="task-timer ${timerClass}" id="timer-${id}">${timerDisplay}</span></div><div class="task-header-right"><span class="task-toggle-icon">${toggleIcon}</span></div></div>${bodyHtml}</div>`;
+    const conflictAlert=taskConflicts>0?`<div class="tc2-alert tc2-alert-amber">⚠️ ${taskConflicts} endereço(s) em conflito com outra ordem</div>`:'';
+    const faltamAlert=faltam>0?`<div class="tc2-alert tc2-alert-red">⚠ Faltam ${faltam} palete(s) sem endereço disponível</div>`:'';
+    return `<div class="tc2-card ${cardClass}" id="tc-${id}"><div class="tc2-header" onclick="toggleMinimize(${id})"><div class="tc2-main"><div class="tc2-row1"><span class="tc2-via">Via C: ${escapeHtml(String(reg.via))}</span><span class="tc2-forn">${escapeHtml(reg.forn)}</span><span class="tc2-timer ${timerClass}" id="timer-${id}">${timerDisplay}</span></div><div class="tc2-row2"><span class="tc2-meta">👤 ${escapeHtml(reg.emp)}${reg.mat?' · Mat. '+escapeHtml(String(reg.mat)):''}</span>${createdBy?`<span class="tc2-meta" style="color:var(--muted);">💻 ${escapeHtml(createdBy)}</span>`:''}${criadoStr?`<span class="tc2-meta">📅 ${criadoStr}</span>`:''}</div></div><button class="tc2-toggle" onclick="event.stopPropagation();toggleMinimize(${id})">${minimized?'▼':'▲'}</button></div><div class="tc2-body${minimized?' minimized':''}" id="task-body-${id}"><div class="tc2-info-row"><div><div class="tc2-prod-cod">${escapeHtml(prod.cod)}</div><div class="tc2-prod-name">${escapeHtml(prod.desc)}</div><div class="tc2-tags"><span class="tc2-tag">Linha ${escapeHtml(prod.descLinha1)}</span><span class="tc2-tag tc2-tag-green">Níveis ${reg.nivelMin}–${reg.nivelMax}</span></div></div><div class="tc2-paletes"><div class="tc2-pal-num ${progNumClass}">${totalAlocados}<span class="tc2-pal-den">/${reg.paletes}</span></div><div class="tc2-pal-lbl">paletes</div><div class="tc2-progress"><div class="tc2-progress-bar ${progBarClass}" style="width:${progPct}%"></div></div>${faltam>0?`<div style="font-size:9px;color:var(--fc-red);font-weight:600;margin-top:2px;">−${faltam} faltam</div>`:''}</div></div>${conflictAlert}${faltamAlert}<div class="tc2-addr-section"><div class="tc2-addr-ttl"><span>Endereços sugeridos</span><span>${totalAlocados} em ${alocacao.length} rua(s)</span></div>${addrBlocksHtml}</div><div class="tc2-actions"><button class="tc2-btn tc2-btn-confirm" onclick="confirmarTarefa(${id})">✅ Confirmar</button><button class="tc2-btn tc2-btn-edit" onclick="editarTarefa(${id})">✏️ Editar</button><button class="tc2-btn tc2-btn-cancel" onclick="cancelarTarefa(${id})">❌ Cancelar</button><button class="tc2-btn tc2-btn-print" onclick="imprimirTarefaPorId(${id},true)">🖨️</button></div></div></div>`;
   }).join('');
 }
 function renderCompletedTasks(){
@@ -1987,11 +2340,13 @@ function renderCompletedTasks(){
     if(fornF && t.reg.forn!==fornF)return false;
     if(q && !`${t.reg.emp} ${t.reg.forn} ${t.reg.via} ${t.prod.desc}`.toLowerCase().includes(q))return false;
     if(dataF){
-      const d=t.finishedAt?new Date(t.finishedAt):null;
-      if(!d)return false;
-      if(dataF==='hoje' && d<hoje)return false;
-      if(dataF==='semana' && d<semana)return false;
-      if(dataF==='mes' && d<mes)return false;
+      // Filtra pela data de criação da ordem
+      const ts = t.createdAt || t.finishedAt;
+      if(!ts)return false;
+      const d = new Date(ts);
+      // Compara usando strings locais para evitar problema de timezone
+      const dLocal = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+      if(dLocal!==dataF)return false;
     }
     return true;
   }).slice().reverse();
@@ -1999,6 +2354,10 @@ function renderCompletedTasks(){
   const totalEmps=new Set(filtered.map(t=>t.reg.mat)).size;
   const avgSecs=filtered.length?Math.floor(filtered.reduce((s,t)=>s+(t.totalSeconds||0),0)/filtered.length):0;
   const elTotal=document.getElementById('kpi-fin-total');if(elTotal)elTotal.textContent=filtered.length;
+  const elKpiSub=document.querySelector('#kpi-fin-total')?.closest('.kpi-mini')?.querySelector('.kpi-sub');
+  if(elKpiSub)elKpiSub.textContent=dataF?'no dia selecionado':'total';
+  const btnLimpar=document.getElementById('btn-limpar-data');
+  if(btnLimpar)btnLimpar.style.opacity=dataF?'1':'0';
   const elEmps=document.getElementById('kpi-fin-emps');if(elEmps)elEmps.textContent=totalEmps;
   const elAvg=document.getElementById('kpi-fin-avg');if(elAvg)elAvg.textContent=filtered.length?formatTime(avgSecs):'—';
   const elPal=document.getElementById('kpi-fin-paletes');if(elPal)elPal.textContent=totalPaletes;
@@ -2008,13 +2367,15 @@ function renderCompletedTasks(){
   if(empGrid)empGrid.innerHTML=Object.values(empStats).length===0?'<div style="font-size:12px;color:var(--muted)">Nenhuma tarefa finalizada</div>':Object.values(empStats).sort((a,b)=>b.count-a.count).map(e=>`<div class="emp-stat-card"><div class="emp-stat-name">${escapeHtml(e.nome)}</div><div class="emp-stat-mat">Mat. ${escapeHtml(e.mat)}</div><div class="emp-stat-row"><span class="emp-stat-lbl">Tarefas</span><span class="emp-stat-val">${e.count}</span></div><div class="emp-stat-row"><span class="emp-stat-lbl">Paletes</span><span class="emp-stat-val">${e.totalPaletes}</span></div><div class="emp-stat-row"><span class="emp-stat-lbl">Tempo médio</span><span class="emp-stat-val">${formatTime(Math.floor(e.totalSecs/e.count))}</span></div></div>`).join('');
   if(filtered.length===0){container.innerHTML='<div class="empty"><div class="empty-ico">✅</div><p>Nenhuma armazenagem finalizada.</p></div>'; return;}
   container.innerHTML=filtered.map(task=>{
-    const{id,prod,reg,alocacao,totalAlocados,totalSeconds,finishedAt,createdBy}=task;
+    const{id,prod,reg,alocacao,totalAlocados,totalSeconds,finishedAt,createdAt:taskCreatedAt,createdBy}=task;
     const expanded = getVisual(id,'expanded',false); // #4: estado visual local
     const timerDisplay=formatTime(totalSeconds);
     const bodyClass=expanded?'expanded':'';
-    const finHora=finishedAt?new Date(finishedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'';
+    const _finTs=finishedAt||taskCreatedAt; const finHora=_finTs?new Date(_finTs).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'';
     const criadoPor = createdBy ? `<span style="font-size:9px;color:var(--muted2);margin-left:4px">por ${escapeHtml(createdBy)}</span>` : '';
-    let bodyHtml=`<div class="task-body ${bodyClass}" id="task-body-${id}"><div class="prod-bar"><div class="prod-bar-cod">${prod.cod}</div><div class="prod-bar-name">${prod.desc}</div><div class="prod-tags"><span class="prod-tag">Linha ${prod.descLinha1}</span><span class="prod-tag green">Níveis: ${reg.nivelMin} a ${reg.nivelMax}</span></div></div><div class="res-hdr" style="padding:0 16px;margin-top:12px"><div><div class="res-ttl">Endereços alocados</div><div class="res-sub">${reg.paletes} palete(s) · ${totalAlocados}/${reg.paletes} reservados</div></div></div>`;
+    const autoBadge = task.finalizadoPorAuditoria ? `<span style="font-size:9px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,.13);border:1px solid rgba(124,58,237,.35);border-radius:10px;padding:2px 8px;margin-left:4px;white-space:nowrap">⚡ Auto</span>` : '';
+    const criadoInfoFin=taskCreatedAt?`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:7px 16px;background:var(--surface2);border-top:1px solid var(--border);font-size:11px;color:var(--muted2);">📅 Criado em: <strong style="color:var(--text)">${new Date(taskCreatedAt).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'})} às ${new Date(taskCreatedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</strong>${finishedAt?' · ✅ Finalizado: <strong style=\'color:var(--fc-green)\'>'+new Date(finishedAt).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'})+' às '+new Date(finishedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'</strong>':''}</div>`:'';
+    let bodyHtml=`<div class="task-body ${bodyClass}" id="task-body-${id}"><div class="prod-bar"><div class="prod-bar-cod">${prod.cod}</div><div class="prod-bar-name">${prod.desc}</div><div class="prod-tags"><span class="prod-tag">Linha ${prod.descLinha1}</span><span class="prod-tag green">Níveis: ${reg.nivelMin} a ${reg.nivelMax}</span></div></div>${criadoInfoFin}<div class="res-hdr" style="padding:0 16px;margin-top:12px"><div><div class="res-ttl">Endereços alocados</div><div class="res-sub">${reg.paletes} palete(s) · ${totalAlocados}/${reg.paletes} reservados</div></div></div>`;
     for(let aloc of alocacao){
       const rua=aloc.rua;
       const linhaNome=(Array.isArray(ruaLinhaMap[rua])?ruaLinhaMap[rua]:[ruaLinhaMap[rua]]).map(k=>linhasMap[k]||k).join(' + ');
@@ -2026,7 +2387,10 @@ function renderCompletedTasks(){
     }
     bodyHtml+=`<div class="task-actions"><button class="print-task-btn" onclick="imprimirTarefaPorId(${id}, false)">🖨️ Imprimir</button><button class="action-btn cancel" onclick="excluirTarefaFinalizada(${id})">🗑️ Excluir</button></div></div>`;
     const toggleIcon=expanded?'▲':'▼';
-    return `<div class="task-card completed"><div class="task-header" onclick="toggleExpand(${id})"><div class="task-header-left"><span class="task-badge">Via C: ${reg.via}</span><span class="task-title">${reg.forn} - ${reg.emp}</span>${criadoPor}<span class="task-timer" id="timer-${id}" style="background:var(--fc-green-bg);color:var(--fc-green)">${timerDisplay}</span></div><div class="task-header-right"><span style="font-size:10px;color:var(--muted2)">${finHora}</span><span class="task-toggle-icon">${toggleIcon}</span></div></div>${bodyHtml}</div>`;
+    const _tcaFin = taskCreatedAt ? new Date(taskCreatedAt) : null;
+    const dataGerado = _tcaFin ? _tcaFin.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}) : '';
+    const horaGerado = _tcaFin ? _tcaFin.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '';
+    return `<div class="task-card completed"><div class="task-header" onclick="toggleExpand(${id})"><div class="task-header-left"><span class="task-badge">Via C: ${reg.via}</span><span class="task-title">${reg.forn} - ${reg.emp}</span>${criadoPor}${autoBadge}${dataGerado?`<span style="font-size:9px;color:var(--muted2);margin-left:8px">📅 Criado: ${dataGerado} ${horaGerado}</span>`:''}<span class="task-timer" id="timer-${id}" style="background:var(--fc-green-bg);color:var(--fc-green)">${timerDisplay}</span></div><div class="task-header-right"><span style="font-size:10px;color:var(--muted2)">${finHora}</span><span class="task-toggle-icon">${toggleIcon}</span></div></div>${bodyHtml}</div>`;
   }).join('');
 }
 function imprimirTarefaPorId(id,isActive){const task=isActive?tarefasAtivas.find(t=>t.id===id):tarefasFinalizadas.find(t=>t.id===id); if(task)imprimirTarefa(task);}
@@ -2053,7 +2417,7 @@ setInterval(()=>{
       const elapsed=Math.floor((Date.now()-t.createdAt)/1000);
       span.innerText=formatTime(elapsed);
       const cls=elapsed>2400?'overdue':elapsed>1200?'warn':'';
-      span.className=`task-timer ${cls}`;
+      span.className=`tc2-timer ${cls}`;
       const card=document.getElementById(`tc-${t.id}`);
       if(card){card.classList.toggle('overdue',elapsed>2400); card.classList.toggle('warn-time',elapsed>1200&&elapsed<=2400);}
       // Fix #4: usa Set externo que sobrevive ao aplicarSnapshot
