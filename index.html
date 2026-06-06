@@ -578,45 +578,29 @@ input[readonly] { background-color: var(--surface3); cursor: default; color: var
 
 <!-- MODAL ALERTA PLANILHA -->
 <div id="modal-alerta-planilha" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;align-items:center;justify-content:center;padding:16px;">
-  <div style="background:var(--surface);border-radius:18px;max-width:520px;width:100%;box-shadow:0 12px 50px rgba(0,0,0,.3);overflow:hidden;animation:slideUp .25s ease">
+  <div style="background:var(--surface);border-radius:18px;max-width:440px;width:100%;box-shadow:0 12px 50px rgba(0,0,0,.3);overflow:hidden;animation:slideUp .25s ease">
     <div style="background:linear-gradient(135deg,#f97316,#ef4444);padding:20px 20px 16px;display:flex;align-items:center;gap:14px;">
       <div style="font-size:36px;line-height:1">⏰</div>
       <div style="flex:1">
-        <div style="font-size:15px;font-weight:800;color:#fff">Hora de atualizar as planilhas!</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.8);margin-top:3px">Importe as versões mais recentes para manter a auditoria correta.</div>
+        <div style="font-size:15px;font-weight:800;color:#fff">Hora de atualizar a planilha!</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.8);margin-top:3px">Importe o novo Detalhamento WMS para manter os endereços atualizados.</div>
       </div>
       <button onclick="fecharModalAlerta()" style="background:rgba(255,255,255,.2);border:none;border-radius:50%;width:30px;height:30px;font-size:16px;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0">✕</button>
     </div>
-    <div style="padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <div>
-        <div style="font-size:10px;font-weight:700;color:var(--muted2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">📦 Via Cega</div>
-        <div class="drop-zone" id="modal-dz-vc" onclick="document.getElementById('modal-file-vc').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="modalOnDropVC(event)" style="padding:12px;min-height:64px;">
-          <input type="file" id="modal-file-vc" accept=".xlsx,.xls" onchange="modalHandleVC(this)" style="display:none">
-          <div style="font-size:20px">📋</div>
-          <p style="font-size:10px;margin:3px 0 0">Arraste ou clique</p>
-        </div>
-        <div id="modal-info-vc" class="file-ok" style="display:none;margin-top:6px;">
-          <span style="font-size:14px">✅</span>
-          <div style="flex:1"><div id="modal-name-vc" style="font-size:10px;font-weight:600;color:var(--fc-green);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px"></div></div>
-          <button onclick="modalTrocarVC()" style="background:none;border:none;font-size:10px;color:var(--muted2);cursor:pointer;text-decoration:underline;flex-shrink:0">Trocar</button>
-        </div>
+    <div style="padding:16px;">
+      <div style="font-size:10px;font-weight:700;color:var(--muted2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">📂 Detalhamento WMS · Endereços do CD</div>
+      <div class="drop-zone" id="modal-dz-det" onclick="document.getElementById('modal-file-det').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="modalOnDropDet(event)" style="padding:20px;min-height:80px;">
+        <input type="file" id="modal-file-det" accept=".xlsx,.xls" onchange="modalHandleDet(this)" style="display:none">
+        <div class="dz-icon">📂</div>
+        <p>Toque para selecionar ou arraste<br><strong>a planilha de Detalhamento</strong></p>
       </div>
-      <div>
-        <div style="font-size:10px;font-weight:700;color:var(--muted2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">📍 Endereços</div>
-        <div class="drop-zone" id="modal-dz-end" onclick="document.getElementById('modal-file-end').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="modalOnDropEnd(event)" style="padding:12px;min-height:64px;">
-          <input type="file" id="modal-file-end" accept=".xlsx,.xls" onchange="modalHandleEnd(this)" style="display:none">
-          <div style="font-size:20px">📍</div>
-          <p style="font-size:10px;margin:3px 0 0">Arraste ou clique</p>
-        </div>
-        <div id="modal-info-end" class="file-ok" style="display:none;margin-top:6px;">
-          <span style="font-size:14px">✅</span>
-          <div style="flex:1"><div id="modal-name-end" style="font-size:10px;font-weight:600;color:var(--fc-green);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px"></div></div>
-          <button onclick="modalTrocarEnd()" style="background:none;border:none;font-size:10px;color:var(--muted2);cursor:pointer;text-decoration:underline;flex-shrink:0">Trocar</button>
-        </div>
+      <div id="modal-info-det" class="file-ok" style="display:none;margin-top:8px;">
+        <span style="font-size:20px">✅</span>
+        <div style="flex:1"><div id="modal-name-det" class="file-ok-name"></div><div class="file-ok-sub">Pronto para processar</div></div>
+        <button onclick="modalTrocarDet()" style="background:none;border:none;font-size:11px;color:var(--muted2);cursor:pointer;text-decoration:underline;flex-shrink:0">Trocar</button>
       </div>
     </div>
-    <div style="padding:0 16px 16px;display:flex;gap:8px;justify-content:flex-end;align-items:center;">
-      <span style="font-size:10px;color:var(--muted2);flex:1">Importe ao menos uma planilha para continuar.</span>
+    <div style="padding:0 16px 16px;display:flex;gap:8px;justify-content:flex-end;">
       <button onclick="fecharModalAlerta()" style="padding:8px 14px;border-radius:8px;border:1.5px solid var(--border2);background:var(--surface2);font-size:12px;font-weight:600;color:var(--muted2);cursor:pointer;font-family:'Sora',sans-serif">Lembrar depois</button>
       <button id="modal-btn-processar" onclick="modalProcessar()" class="btn btn-red" style="font-size:12px;padding:8px 16px" disabled>⚡ Processar e atualizar</button>
     </div>
@@ -2746,8 +2730,7 @@ function hideLayTip(){const t=document.getElementById('lay-tooltip');if(t)t.styl
 // ================== ALERTA DE ATUALIZAÇÃO DE PLANILHA ==================
 const HORARIOS_ALERTA = ['09:15','11:15','13:15','15:15','17:15','19:15'];
 let _alertasMostrados = new Set();
-let _modalVCFile = null;
-let _modalEndFile = null;
+let _modalDetFile = null;
 
 function iniciarVerificacaoAlerta() {
   setInterval(verificarHorarioAlerta, 30000);
@@ -2774,69 +2757,44 @@ function fecharModalAlerta() {
   if (m) m.style.display = 'none';
 }
 
-function modalHandleVC(input) {
+function modalHandleDet(input) {
   const f = input.files[0]; if (!f) return;
-  _modalVCFile = f;
-  document.getElementById('modal-name-vc').textContent = f.name;
-  document.getElementById('modal-dz-vc').style.display = 'none';
-  document.getElementById('modal-info-vc').style.display = 'flex';
-  _atualizarBtnModalProcessar();
-}
-
-function modalTrocarVC() {
-  _modalVCFile = null;
-  document.getElementById('modal-file-vc').value = '';
-  document.getElementById('modal-dz-vc').style.display = '';
-  document.getElementById('modal-info-vc').style.display = 'none';
-  _atualizarBtnModalProcessar();
-}
-
-function modalOnDropVC(e) {
-  e.preventDefault(); e.currentTarget.classList.remove('drag');
-  const f = e.dataTransfer.files[0]; if (!f) return;
-  const input = document.getElementById('modal-file-vc');
-  const dt = new DataTransfer(); dt.items.add(f); input.files = dt.files;
-  modalHandleVC(input);
-}
-
-function modalHandleEnd(input) {
-  const f = input.files[0]; if (!f) return;
-  _modalEndFile = f;
-  document.getElementById('modal-name-end').textContent = f.name;
-  document.getElementById('modal-dz-end').style.display = 'none';
-  document.getElementById('modal-info-end').style.display = 'flex';
-  _atualizarBtnModalProcessar();
-}
-
-function modalTrocarEnd() {
-  _modalEndFile = null;
-  document.getElementById('modal-file-end').value = '';
-  document.getElementById('modal-dz-end').style.display = '';
-  document.getElementById('modal-info-end').style.display = 'none';
-  _atualizarBtnModalProcessar();
-}
-
-function modalOnDropEnd(e) {
-  e.preventDefault(); e.currentTarget.classList.remove('drag');
-  const f = e.dataTransfer.files[0]; if (!f) return;
-  const input = document.getElementById('modal-file-end');
-  const dt = new DataTransfer(); dt.items.add(f); input.files = dt.files;
-  modalHandleEnd(input);
-}
-
-function _atualizarBtnModalProcessar() {
+  _modalDetFile = f;
+  document.getElementById('modal-name-det').textContent = f.name;
+  document.getElementById('modal-dz-det').style.display = 'none';
+  document.getElementById('modal-info-det').style.display = 'flex';
   const btn = document.getElementById('modal-btn-processar');
-  if (btn) btn.disabled = !_modalVCFile && !_modalEndFile;
+  if (btn) btn.disabled = false;
+}
+
+function modalTrocarDet() {
+  _modalDetFile = null;
+  document.getElementById('modal-file-det').value = '';
+  document.getElementById('modal-dz-det').style.display = '';
+  document.getElementById('modal-info-det').style.display = 'none';
+  const btn = document.getElementById('modal-btn-processar');
+  if (btn) btn.disabled = true;
+}
+
+function modalOnDropDet(e) {
+  e.preventDefault(); e.currentTarget.classList.remove('drag');
+  const f = e.dataTransfer.files[0]; if (!f) return;
+  const input = document.getElementById('modal-file-det');
+  const dt = new DataTransfer(); dt.items.add(f); input.files = dt.files;
+  modalHandleDet(input);
 }
 
 function modalProcessar() {
+  if (!_modalDetFile) return;
   fecharModalAlerta();
-  if (_modalVCFile) { _rawFileVC = _modalVCFile; processarVC(); }
-  if (_modalEndFile) { _rawFileEnd = _modalEndFile; processarEndAuditoria(); }
-  _modalVCFile = null; _modalEndFile = null;
-  ['modal-file-vc','modal-file-end'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  ['modal-dz-vc','modal-dz-end'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ''; });
-  ['modal-info-vc','modal-info-end'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+  // Reutiliza o fluxo principal: setFile + processar()
+  setFile(_modalDetFile);
+  processar();
+  // Reset modal
+  _modalDetFile = null;
+  document.getElementById('modal-file-det').value = '';
+  document.getElementById('modal-dz-det').style.display = '';
+  document.getElementById('modal-info-det').style.display = 'none';
   document.getElementById('modal-btn-processar').disabled = true;
 }
 </script>
