@@ -903,10 +903,11 @@ function aplicarSnapshot(data, forcado) {
   renderActiveTasks();
   renderCompletedTasks();
   atualizarListaFornecedores();
+  var prevAfterLoad={ativas:tarefasAtivas.length,finalizadas:tarefasFinalizadas.length};
   verificarAutoFinalizacao();
   if(!forcado){
-    var novas=tarefasAtivas.length-prev.ativas;
-    var fin=tarefasFinalizadas.length-prev.finalizadas;
+    var novas=prevAfterLoad.ativas-prev.ativas;
+    var fin=prevAfterLoad.finalizadas-prev.finalizadas;
     if(novas>0)showToast('\uD83D\uDD04 '+novas+' nova(s) ordem(ns) criada(s) por outro usuario');
     else if(novas<0)showToast('\uD83D\uDD04 Atualizacao recebida de outro usuario');
     if(fin>0)showToast('\u2705 '+fin+' ordem(ns) finalizada(s) por outro usuario');
@@ -1484,9 +1485,13 @@ function verificarAutoFinalizacao() {
     if (!chave) continue;
     const umasVia = umasByVia.get(chave) || [];
     if (!umasVia.length) continue;
-    // Regra: via ausente da planilha de Via Cega = sem pendência = finalizar
+    // Regra: via ausente da planilha de Via Cega = finalizar apenas se não houver UMAs pendentes (ex: Bloqueada)
     const viaInVC = Array.from(viaCegaMap.keys()).some(k => k.startsWith(via + '|'));
-    if (viaCegaMap.size > 0 && !viaInVC) { toFinalize.push({ id: task.id, via }); continue; }
+    if (viaCegaMap.size > 0 && !viaInVC) {
+      const temPendentes = umasVia.some(u => !/MTG|STG/i.test(u.endereco || '') && (u.status !== 'Endereçada' || !u.endereco));
+      if (!temPendentes) toFinalize.push({ id: task.id, via });
+      continue;
+    }
     // Pendente = não endereçada E não está em MTG/STG (expedição/montagem)
     const pendentes = umasVia.filter(u => !/MTG|STG/i.test(u.endereco || '') && (u.status !== 'Endereçada' || !u.endereco)).length;
     if (pendentes === 0) toFinalize.push({ id: task.id, via });
@@ -1552,9 +1557,13 @@ function renderAuditoria() {
     const umasVia = chaveEncontrada ? (umasByVia.get(chaveEncontrada) || []) : [];
     const totalUMAs = umasVia.length;
 
-    // Regra: Via Cega importada e via ausente dela = sem pendência = 100%
+    // Regra: Via Cega importada e via ausente dela — classifica pelo status real para evitar falsos positivos (ex: UMAs Bloqueadas)
     if (viaCegaMap.size > 0 && !viaInViaCega) {
-      item._s = { chaveEncontrada, umasVia, totalUMAs, corretas: totalUMAs, incorretas: 0, pendentes: 0, listaCorretas: [...umasVia], listaIncorretas: [], listaPendentes: [], semDados: false, pct: 100, ausenteViaCega: true };
+      const listaCorretasVC = umasVia.filter(u => /MTG|STG/i.test(u.endereco || '') || (u.status === 'Endereçada' && u.endereco));
+      const listaPendentesVC = umasVia.filter(u => !/MTG|STG/i.test(u.endereco || '') && (u.status !== 'Endereçada' || !u.endereco));
+      const corretasVC = listaCorretasVC.length, pendentesVC = listaPendentesVC.length;
+      const pctVC = totalUMAs === 0 ? null : Math.round((corretasVC / totalUMAs) * 100);
+      item._s = { chaveEncontrada, umasVia, totalUMAs, corretas: corretasVC, incorretas: 0, pendentes: pendentesVC, listaCorretas: listaCorretasVC, listaIncorretas: [], listaPendentes: listaPendentesVC, semDados: totalUMAs === 0, pct: pctVC, ausenteViaCega: true };
       return;
     }
 
