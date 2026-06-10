@@ -620,8 +620,8 @@ function getMinNivel(rua, predio) {
 
 // Retorna o nível máximo para a combinação rua/prédio (regras rua a rua)
 function getMaxNivel(rua, predio) {
-  // Prédios liberados parcialmente: N7 máximo (N4–N7)
-  if ([13,14,49,50,89,90].includes(predio)) return 7;
+  // Prédios liberados parcialmente: N7 máximo (N4–N7); exceto rua 12 → max N6
+  if ([13,14,49,50,89,90].includes(predio)) return rua === 12 ? 6 : 7;
   switch(rua) {
     case 1: case 2: return 7;
     case 3:
@@ -655,8 +655,8 @@ function getMaxNivel(rua, predio) {
 function getMaxApartamento(rua, predio, nivel, tipoRua = 'padrao') {
   if (tipoRua === 'blocado') return 1;
   if (tipoRua === 'stage') return 1;
-  // Prédios liberados parcialmente: até 3 apartamentos (N4–N7)
-  if ([13,14,49,50,89,90].includes(predio)) return 3;
+  // Prédios liberados parcialmente: até 3 apartamentos (N4–N7); exceto rua 12 → 2 apts
+  if ([13,14,49,50,89,90].includes(predio)) return rua === 12 ? 2 : 3;
   switch(rua) {
     case 1:
       // N2+: 2 aptos. N1: ímpar=4; par 1–12 ou 28–48=4; resto par=2
