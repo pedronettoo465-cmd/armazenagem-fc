@@ -428,32 +428,25 @@ input[readonly] { background-color: var(--surface3); cursor: default; color: var
 </div>
 
 <!-- MAPA DO CD -->
-<div id="view-mapa" style="display:none;padding:16px;max-width:900px;margin:0 auto;">
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
-    <div class="kpi-mini"><div class="kpi-lbl">Ocupação Total</div><div class="kpi-val" id="mapa-kpi-ocup" style="color:var(--fc-red)">—</div><div class="kpi-sub">do CD</div></div>
-    <div class="kpi-mini"><div class="kpi-lbl">Rua Mais Cheia</div><div class="kpi-val" id="mapa-kpi-cheia" style="color:var(--amber);font-size:16px">—</div><div class="kpi-sub">maior ocupação</div></div>
-    <div class="kpi-mini"><div class="kpi-lbl">Rua Mais Livre</div><div class="kpi-val" id="mapa-kpi-livre" style="color:var(--fc-green);font-size:16px">—</div><div class="kpi-sub">mais espaço</div></div>
-    <div class="kpi-mini"><div class="kpi-lbl">Em Armazenagem</div><div class="kpi-val" id="mapa-kpi-ativas" style="color:var(--blue)">0</div><div class="kpi-sub">ruas com ordem ativa</div></div>
+<div id="view-mapa" style="display:none;padding:16px;max-width:960px;margin:0 auto;">
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px;">
+    <div class="kpi-mini"><div class="kpi-lbl">Ocupação N2+</div><div class="kpi-val" id="mapa-kpi-ocup" style="color:var(--fc-red)">—</div><div class="kpi-sub">do CD</div></div>
+    <div class="kpi-mini"><div class="kpi-lbl">N2+ Livres</div><div class="kpi-val" id="mapa-kpi-n2livre" style="color:var(--fc-green)">—</div><div class="kpi-sub">armazenagem</div></div>
+    <div class="kpi-mini"><div class="kpi-lbl">N1 Livres</div><div class="kpi-val" id="mapa-kpi-n1livre" style="color:var(--blue)">—</div><div class="kpi-sub">picking</div></div>
+    <div class="kpi-mini"><div class="kpi-lbl">Rua Mais Cheia</div><div class="kpi-val" id="mapa-kpi-cheia" style="color:var(--amber);font-size:16px">—</div><div class="kpi-sub">maior ocupação N2+</div></div>
+    <div class="kpi-mini"><div class="kpi-lbl">Rua Mais Livre</div><div class="kpi-val" id="mapa-kpi-livre" style="color:var(--fc-green);font-size:16px">—</div><div class="kpi-sub">mais N2+ livres</div></div>
   </div>
-  <!-- Legenda -->
-  <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;align-items:center;">
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center;">
     <span style="font-size:11px;font-weight:600;color:var(--muted2);">LEGENDA:</span>
-    <span class="mapa-leg" style="--lc:#e8f5e9;--lborder:#a5d6a7">0–20% ocupado</span>
-    <span class="mapa-leg" style="--lc:#fff9c4;--lborder:#f9a825">21–50% ocupado</span>
-    <span class="mapa-leg" style="--lc:#ffccbc;--lborder:#ef6c00">51–80% ocupado</span>
-    <span class="mapa-leg" style="--lc:#ffcdd2;--lborder:#c62828">81–100% ocupado</span>
-    <span class="mapa-leg" style="--lc:rgba(37,99,235,.12);--lborder:#2563EB">🚚 Armazenagem ativa</span>
+    <span class="mapa-leg" style="--lc:#e8f5e9;--lborder:#a5d6a7">0–20%</span>
+    <span class="mapa-leg" style="--lc:#fff9c4;--lborder:#f9a825">21–50%</span>
+    <span class="mapa-leg" style="--lc:#ffccbc;--lborder:#ef6c00">51–80%</span>
+    <span class="mapa-leg" style="--lc:#ffcdd2;--lborder:#c62828">81–100%</span>
+    <span class="mapa-leg" style="--lc:rgba(37,99,235,.12);--lborder:#2563EB">🚚 Ordem ativa</span>
     <span class="mapa-leg" style="--lc:var(--surface2);--lborder:var(--border2)">Sem dados</span>
   </div>
-  <!-- Filtro de modo -->
-  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
-    <button class="mapa-mode-btn active" id="mapa-btn-ocup" onclick="setMapaMode('ocupacao')">📊 Ocupação</button>
-    <button class="mapa-mode-btn" id="mapa-btn-ativas" onclick="setMapaMode('ativas')">🚚 Ordens Ativas</button>
-    <button class="mapa-mode-btn" id="mapa-btn-linha" onclick="setMapaMode('linha')">🏷️ Linha Configurada</button>
-  </div>
   <div id="mapa-cd-container"></div>
-  <!-- Tooltip flutuante -->
-  <div id="mapa-tooltip" style="position:fixed;display:none;background:var(--text);color:#fff;font-size:11px;font-weight:600;padding:8px 12px;border-radius:8px;pointer-events:none;z-index:5000;line-height:1.6;max-width:220px;"></div>
+  <div id="mapa-tooltip" style="position:fixed;display:none;background:var(--text);color:#fff;font-size:11px;font-weight:600;padding:8px 12px;border-radius:8px;pointer-events:none;z-index:5000;line-height:1.6;max-width:250px;"></div>
 </div>
 
 <!-- MAPA DE LAYOUTIZAÇÃO -->
@@ -2526,17 +2519,21 @@ function setMapaMode(mode) {
 function getRuaStats() {
   const stats = {};
   for (let rua of RUAS) {
-    const totalKeys   = Object.keys(cdLayout).filter(k => k.startsWith(rua+'|'));
-    const ocupados    = totalKeys.filter(k => occupiedSet.has(k)).length;
-    const reservados  = totalKeys.filter(k => reservedAddresses.has(k)).length;
-    const finalizados = totalKeys.filter(k => finalizedAddressesSet.has(k)).length;
-    const total       = totalKeys.length;
+    const n2Keys      = Object.keys(cdLayout).filter(k => k.startsWith(rua+'|'));
+    const n1Keys      = Object.keys(cdLayoutN1).filter(k => k.startsWith(rua+'|'));
+    const ocupados    = n2Keys.filter(k => occupiedSet.has(k)).length;
+    const ocupN1      = n1Keys.filter(k => occupiedSet.has(k)).length;
+    const reservados  = n2Keys.filter(k => reservedAddresses.has(k)).length;
+    const finalizados = n2Keys.filter(k => finalizedAddressesSet.has(k)).length;
+    const total       = n2Keys.length;
+    const totalN1     = n1Keys.length;
     const livres      = Math.max(0, total - ocupados - reservados - finalizados);
+    const livresN1    = Math.max(0, totalN1 - ocupN1);
     const pctOcup     = total > 0 ? Math.round((ocupados / total) * 100) : null;
     const linhas      = ruaLinhaMap[rua];
     const linhaNames  = linhas ? (Array.isArray(linhas)?linhas:[linhas]).map(k=>linhasMap[k]||k) : [];
     const ordensAtivas= tarefasAtivas.filter(t=>t.alocacao.some(a=>a.rua===rua));
-    stats[rua] = { total, ocupados, reservados, finalizados, livres, pctOcup, linhaNames, ordensAtivas };
+    stats[rua] = { total, totalN1, ocupados, ocupN1, reservados, finalizados, livres, livresN1, pctOcup, linhaNames, ordensAtivas };
   }
   return stats;
 }
@@ -2552,73 +2549,90 @@ function getCorOcupacao(pct, hasAtiva, mode) {
   if (pct <= 80)  return { bg:'#ffccbc', border:'#ef6c00', txt:'#bf360c' };
   return           { bg:'#ffcdd2', border:'#c62828', txt:'#b71c1c' };
 }
-function renderRuaBloco(rua, s, mode, ruasAtivas) {
-  const hasAtiva = ruasAtivas.has(rua);
-  const cor = getCorOcupacao(s.pctOcup, hasAtiva, mode);
-  let conteudo='', subLabel='';
-  if (mode==='ocupacao') {
-    conteudo = s.pctOcup!==null ? s.pctOcup+'%' : '—';
-    subLabel  = s.total>0 ? `${s.ocupados} ocupados · ${s.livres} livres · ${s.total} total` : 'sem layout';
-  } else if (mode==='ativas') {
-    if (hasAtiva) { conteudo=s.ordensAtivas.length+''; subLabel=`ordem${s.ordensAtivas.length>1?'s':''} ativa${s.ordensAtivas.length>1?'s':''} · `+s.ordensAtivas.map(t=>`Via ${t.reg.via}`).join(', '); }
-    else { conteudo='✓'; subLabel='livre'; }
-  } else {
-    conteudo  = s.linhaNames.length>0 ? s.linhaNames.join(' / ') : '—';
-    subLabel  = s.linhaNames.length>0 ? `${s.total} endereços` : 'não configurada';
-  }
-  const barPct = s.pctOcup !== null ? s.pctOcup : 0;
-  const barColor = s.pctOcup===null ? 'var(--border2)' : hasAtiva && mode!=='linha' ? '#2563EB' : s.pctOcup<=20 ? '#4caf50' : s.pctOcup<=50 ? '#f9a825' : s.pctOcup<=80 ? '#ef6c00' : '#c62828';
+function renderRuaBloco(rua, s) {
+  const hasAtiva = s.ordensAtivas.length > 0;
+  const cor = getCorOcupacao(s.pctOcup, hasAtiva, 'ocupacao');
+  const barPct   = s.pctOcup !== null ? s.pctOcup : 0;
+  const barColor = s.pctOcup===null ? 'var(--border2)' : hasAtiva ? '#2563EB' : s.pctOcup<=20 ? '#4caf50' : s.pctOcup<=50 ? '#f9a825' : s.pctOcup<=80 ? '#ef6c00' : '#c62828';
+  const pctTxt   = s.pctOcup !== null ? s.pctOcup + '%' : '—';
+  const semDados = s.total === 0 && s.totalN1 === 0;
+
   const tipLines = [
     `<strong>RUA ${String(rua).padStart(2,'0')}</strong>`,
-    s.total>0 ? `Total: ${s.total} endereços` : 'Sem layout',
-    s.total>0 ? `Ocupados: ${s.ocupados} (${s.pctOcup}%)` : '',
-    s.total>0 ? `Livres: ${s.livres}` : '',
-    s.reservados>0 ? `Em armazenagem: ${s.reservados}` : '',
-    s.linhaNames.length>0 ? `Linha: ${s.linhaNames.join(', ')}` : 'Linha: não configurada',
+    !semDados ? `N2+: ${s.ocupados.toLocaleString('pt-BR')} ocup · ${s.livres.toLocaleString('pt-BR')} livres · ${s.total.toLocaleString('pt-BR')} total` : 'Sem layout N2+',
+    s.totalN1>0 ? `N1:  ${s.ocupN1.toLocaleString('pt-BR')} ocup · ${s.livresN1.toLocaleString('pt-BR')} livres · ${s.totalN1.toLocaleString('pt-BR')} total` : '',
+    s.reservados>0 ? `⏳ Em armazenagem: ${s.reservados}` : '',
+    s.linhaNames.length>0 ? `🏷️ Linha: ${s.linhaNames.join(', ')}` : '',
     ...s.ordensAtivas.map(t=>`🚚 Via ${t.reg.via} · ${t.reg.emp}`),
   ].filter(Boolean).join('<br>');
 
-  return `<div class="mapa-rua-bloco" style="background:${cor.bg};border-color:${cor.border};color:${cor.txt};display:flex;align-items:center;gap:12px;min-height:44px;padding:8px 14px;border-radius:10px;border:2px solid;cursor:default;transition:all .15s;position:relative;" data-rua="${rua}" data-tip="${escapeHtml(tipLines)}">
-    <div style="font-size:11px;font-weight:800;font-family:'DM Mono',monospace;min-width:52px;flex-shrink:0;">RUA ${String(rua).padStart(2,'0')}</div>
+  const linhaChip = s.linhaNames.length>0
+    ? `<span style="font-size:9px;font-weight:700;background:rgba(0,0,0,.07);border-radius:4px;padding:1px 6px;color:var(--muted);flex-shrink:0;white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(s.linhaNames.join(', '))}">${escapeHtml(s.linhaNames[0])}</span>`
+    : '';
+
+  const ativaStr = hasAtiva
+    ? `<span style="font-size:10px;font-weight:700;color:#1d4ed8;white-space:nowrap;flex-shrink:0;">🚚 ${s.ordensAtivas.map(t=>'Via '+t.reg.via).join(', ')}</span>`
+    : '';
+
+  const reservStr = s.reservados>0
+    ? `<span style="font-size:10px;font-weight:600;color:#7c3aed;white-space:nowrap;">⏳ ${s.reservados}</span>`
+    : '';
+
+  if (semDados) {
+    return `<div class="mapa-rua-bloco" style="background:var(--surface2);border-color:var(--border2);color:var(--muted);display:flex;align-items:center;gap:10px;min-height:44px;padding:7px 12px;border-radius:10px;border:2px solid;cursor:default;opacity:.6;" data-rua="${rua}" data-tip="${escapeHtml(tipLines)}">
+      <div style="font-size:10px;font-weight:800;font-family:'DM Mono',monospace;min-width:50px;flex-shrink:0;line-height:1.3;">RUA<br>${String(rua).padStart(2,'0')}</div>
+      <div style="font-size:10px;flex:1;">sem dados</div>
+    </div>`;
+  }
+
+  return `<div class="mapa-rua-bloco" style="background:${cor.bg};border-color:${cor.border};color:${cor.txt};display:flex;align-items:center;gap:10px;min-height:50px;padding:8px 12px;border-radius:10px;border:2px solid;cursor:default;transition:all .15s;" data-rua="${rua}" data-tip="${escapeHtml(tipLines)}">
+    <div style="font-size:10px;font-weight:800;font-family:'DM Mono',monospace;min-width:50px;flex-shrink:0;line-height:1.3;color:${cor.txt};">RUA<br>${String(rua).padStart(2,'0')}</div>
     <div style="flex:1;min-width:0;">
-      <div style="height:8px;background:rgba(0,0,0,.08);border-radius:99px;overflow:hidden;margin-bottom:4px;">
+      <div style="height:6px;background:rgba(0,0,0,.08);border-radius:99px;overflow:hidden;margin-bottom:5px;">
         <div style="height:100%;width:${barPct}%;background:${barColor};border-radius:99px;transition:width .4s;"></div>
       </div>
-      <div style="font-size:10px;font-weight:600;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(subLabel)}</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;row-gap:3px;">
+        <span style="font-size:10px;font-weight:700;color:${cor.txt};white-space:nowrap;">${s.ocupados.toLocaleString('pt-BR')} ocup</span>
+        <span style="font-size:10px;color:rgba(0,0,0,.3);">·</span>
+        <span style="font-size:10px;font-weight:700;color:#166534;white-space:nowrap;">${s.livres.toLocaleString('pt-BR')} N2+ livres</span>
+        <span style="font-size:10px;color:rgba(0,0,0,.3);">·</span>
+        <span style="font-size:10px;font-weight:600;color:#1e40af;white-space:nowrap;">${s.livresN1.toLocaleString('pt-BR')} N1 livres</span>
+        ${reservStr ? `<span style="font-size:10px;color:rgba(0,0,0,.3);">·</span>${reservStr}` : ''}
+        ${ativaStr ? `<span style="font-size:10px;color:rgba(0,0,0,.3);">·</span>${ativaStr}` : ''}
+        ${linhaChip}
+      </div>
     </div>
-    <div style="font-size:15px;font-weight:800;font-family:'DM Mono',monospace;flex-shrink:0;min-width:38px;text-align:right;">${mode==='linha'?'':conteudo}</div>
-    ${hasAtiva ? `<span class="mapa-ativa-badge">🚚</span>` : ''}
+    <div style="font-size:20px;font-weight:800;font-family:'DM Mono',monospace;flex-shrink:0;min-width:48px;text-align:right;color:${cor.txt};">${pctTxt}</div>
   </div>`;
 }
 function renderMapa() {
   const container = document.getElementById('mapa-cd-container');
   if (!container) return;
-  if (Object.keys(cdLayout).length===0) {
+  if (Object.keys(cdLayout).length===0 && Object.keys(cdLayoutN1).length===0) {
     container.innerHTML='<div class="empty"><div class="empty-ico">📂</div><p>Importe e processe uma planilha primeiro para visualizar o mapa do CD.</p></div>';
     return;
   }
-  const stats = getRuaStats();
-  const totalAll = Object.values(stats).reduce((s,r)=>s+r.total,0);
-  const ocupAll  = Object.values(stats).reduce((s,r)=>s+r.ocupados,0);
-  const pctAll   = totalAll>0 ? Math.round(ocupAll/totalAll*100) : 0;
+  const stats    = getRuaStats();
+  const totalN2  = Object.values(stats).reduce((s,r)=>s+r.total,0);
+  const ocupN2   = Object.values(stats).reduce((s,r)=>s+r.ocupados,0);
+  const livresN2 = Object.values(stats).reduce((s,r)=>s+r.livres,0);
+  const livresN1 = Object.values(stats).reduce((s,r)=>s+r.livresN1,0);
+  const pctAll   = totalN2>0 ? Math.round(ocupN2/totalN2*100) : 0;
   const ruasComDados = RUAS.filter(r=>stats[r].total>0&&stats[r].pctOcup!==null);
-  const sorted = [...ruasComDados].sort((a,b)=>stats[b].pctOcup-stats[a].pctOcup);
+  const sorted   = [...ruasComDados].sort((a,b)=>stats[b].pctOcup-stats[a].pctOcup);
   const ruaMaisCheia = sorted[0];
   const ruaMaisLivre = sorted[sorted.length-1];
-  const ruasAtivas   = new Set(tarefasAtivas.flatMap(t=>t.alocacao.map(a=>a.rua)));
-  document.getElementById('mapa-kpi-ocup').textContent  = pctAll+'%';
-  document.getElementById('mapa-kpi-cheia').textContent = ruaMaisCheia ? `RUA ${String(ruaMaisCheia).padStart(2,'0')}` : '—';
-  document.getElementById('mapa-kpi-livre').textContent = ruaMaisLivre ? `RUA ${String(ruaMaisLivre).padStart(2,'0')}` : '—';
-  document.getElementById('mapa-kpi-ativas').textContent= ruasAtivas.size;
+  document.getElementById('mapa-kpi-ocup').textContent    = pctAll+'%';
+  document.getElementById('mapa-kpi-n2livre').textContent = livresN2.toLocaleString('pt-BR');
+  document.getElementById('mapa-kpi-n1livre').textContent = livresN1.toLocaleString('pt-BR');
+  document.getElementById('mapa-kpi-cheia').textContent   = ruaMaisCheia ? 'RUA '+String(ruaMaisCheia).padStart(2,'0') : '—';
+  document.getElementById('mapa-kpi-livre').textContent   = ruaMaisLivre ? 'RUA '+String(ruaMaisLivre).padStart(2,'0') : '—';
   let html='';
   for (let i=0; i<RUAS.length; i++) {
     const rua = RUAS[i];
-    html += `<div style="margin-bottom:6px;">
-      ${renderRuaBloco(rua, stats[rua], _mapaMode, ruasAtivas)}
-    </div>`;
-    // Corredor entre ruas (exceto após a última)
-    if (i < RUAS.length - 1) {
-      html += `<div style="height:10px;margin:0 8px 6px;background:repeating-linear-gradient(90deg,var(--border2) 0,var(--border2) 3px,transparent 3px,transparent 12px);border-radius:2px;opacity:.5;" title="Corredor"></div>`;
+    html += `<div style="margin-bottom:5px;">${renderRuaBloco(rua, stats[rua])}</div>`;
+    if (i < RUAS.length-1) {
+      html += `<div style="height:8px;margin:0 8px 4px;background:repeating-linear-gradient(90deg,var(--border2) 0,var(--border2) 3px,transparent 3px,transparent 12px);border-radius:2px;opacity:.4;" title="Corredor"></div>`;
     }
   }
   container.innerHTML=html;
