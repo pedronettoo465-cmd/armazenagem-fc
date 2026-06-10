@@ -701,9 +701,9 @@ function getMaxApartamento(rua, predio, nivel, tipoRua = 'padrao') {
       // pred 1–48: 4 todos; pred 49+: 2
       return predio <= 48 ? 4 : 2;
     case 12:
-      // pred 1–12: 4; par 42,44,46,48: 4; resto: 2
-      if (predio <= 12) return 4;
-      if (predio % 2 === 0 && [42,44,46,48].includes(predio)) return 4;
+      // pred 1–12: N1=4, N2+=2 (até N7); par 42,44,46,48: N1=4; resto: 2
+      if (predio <= 12) return nivel === 1 ? 4 : 2;
+      if ([42,44,46,48].includes(predio) && nivel === 1) return 4;
       return 2;
     case 13:
       // ímpar: 3 aptos; par 2–12: 4; par 16–48: 2
