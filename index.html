@@ -1094,10 +1094,10 @@ function buildData(){
       // Restrições de lado (par/ímpar) e limite de prédio por rua
       if(rua===4  && p===51)  continue; // Rua 4:  prédio 51 bloqueado
       if(rua===16 && p%2!==0) continue; // Rua 16: apenas prédios PARES
-      if(rua===16 && p>38)    continue; // Rua 16: encerra no prédio 38
+      if(rua===16 && p>34)    continue; // Rua 16: encerra no prédio 34
       if(rua===18 && p%2!==0) continue; // Rua 18: apenas prédios PARES
       if(rua===30 && p%2!==0) continue; // Rua 30: apenas prédios PARES
-      if((rua===14||rua===15) && p>38) continue; // Ruas 14–15: encerram no prédio 38
+      if((rua===14||rua===15) && p>34) continue; // Ruas 14–15: encerram no prédio 34
       if(rua===13 && p===14)            continue; // Rua 13: prédio 14 não existe
       if(rua===13 && p%2!==0 && p>37)  continue; // Rua 13 ÍMPAR: encerra no prédio 37
       const maxNivelRua = getMaxNivel(rua, p);
