@@ -694,8 +694,8 @@ function getMaxApartamento(rua, predio, nivel, tipoRua = 'padrao') {
       if ([42,44,46,48].includes(predio) && nivel === 1) return 4;
       return 2;
     case 13:
-      // ímpar: N1=3, N2+=2; par 2–12: N1=4, N2+=2; par 16+: 2
-      if (predio % 2 !== 0) return nivel === 1 ? 3 : 2;
+      // ímpar 1–37: 3 aptos em TODOS os níveis; par 2–12: N1=4, N2+=2; par 16–100: 2
+      if (predio % 2 !== 0) return 3;
       if (predio <= 12) return nivel === 1 ? 4 : 2;
       return 2;
     case 14: case 15: case 16: return 3; // 3 apts em todos os níveis
@@ -1098,7 +1098,8 @@ function buildData(){
       if(rua===18 && p%2!==0) continue; // Rua 18: apenas prédios PARES
       if(rua===30 && p%2!==0) continue; // Rua 30: apenas prédios PARES
       if((rua===14||rua===15) && p>38) continue; // Ruas 14–15: encerram no prédio 38
-      if(rua===13 && p%2===0 && p>48)  continue; // Rua 13 PAR: encerra no prédio 48
+      if(rua===13 && p===14)            continue; // Rua 13: prédio 14 não existe
+      if(rua===13 && p%2!==0 && p>37)  continue; // Rua 13 ÍMPAR: encerra no prédio 37
       const maxNivelRua = getMaxNivel(rua, p);
       const minNivelRua = getMinNivel(rua, p);
       for(let n=minNivelRua;n<=maxNivelRua;n++){
