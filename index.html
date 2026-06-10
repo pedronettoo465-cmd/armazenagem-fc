@@ -534,6 +534,19 @@ input[readonly] { background-color: var(--surface3); cursor: default; color: var
   </div>
   <!-- KPI summary interativo (gerado por renderAuditoria) -->
   <div id="audit-kpi-summary" style="margin-bottom:12px;"></div>
+  <!-- Busca por número de via -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+    <div style="position:relative;flex:1;max-width:320px;">
+      <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;">🔍</span>
+      <input type="text" id="audit-busca-via" placeholder="Buscar por número de via cega…"
+        oninput="setAuditBuscaVia(this.value)"
+        style="width:100%;padding:8px 32px 8px 32px;border:1.5px solid var(--border2);border-radius:8px;font-family:'Sora',sans-serif;font-size:13px;background:var(--card);color:var(--text);box-sizing:border-box;">
+      <button id="btn-audit-limpar-busca" onclick="setAuditBuscaVia('');document.getElementById('audit-busca-via').value='';"
+        title="Limpar busca"
+        style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:15px;cursor:pointer;color:var(--muted2);padding:0;opacity:0;transition:opacity .2s;">✕</button>
+    </div>
+    <span id="audit-busca-resultado" style="font-size:12px;color:var(--muted2);"></span>
+  </div>
   <!-- Filtro de status -->
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;" id="audit-filter-bar">
     <button class="mapa-mode-btn active" id="audit-btn-todas" onclick="setAuditFiltro('todas')">📋 Todas</button>
@@ -1431,6 +1444,13 @@ function reconstruirViaCegaMapFromDetalhamento() {
 let _auditFiltro    = 'todas';
 let _auditDataFiltro = '';
 let _auditPctFiltro  = '';
+let _auditBuscaVia   = '';
+function setAuditBuscaVia(val) {
+  _auditBuscaVia = val.trim();
+  const btn = document.getElementById('btn-audit-limpar-busca');
+  if(btn) btn.style.opacity = _auditBuscaVia ? '1' : '0';
+  renderAuditoria();
+}
 function setAuditData(val) {
   _auditDataFiltro = val;
   _auditPctFiltro  = '';
@@ -1522,10 +1542,31 @@ function renderAuditoria() {
   verificarAutoFinalizacao();
   const viasAtivas = tarefasAtivas.map(t => ({ via: String(t.reg.via||'').trim(), status: 'ativo', tarefa: t }));
   const viasFinalizadas = tarefasFinalizadas.map(t => ({ via: String(t.reg.via||'').trim(), status: 'finalizado', tarefa: t }));
-  const todasOrdens = [...viasAtivas, ...viasFinalizadas].filter(v => v.via);
+  const _buscaVia = (typeof _auditBuscaVia !== 'undefined' ? _auditBuscaVia : '').toLowerCase();
+  const todasOrdens = [...viasAtivas, ...viasFinalizadas].filter(v => v.via &&
+    (!_buscaVia || v.via.toLowerCase().includes(_buscaVia)));
 
-  if (!todasOrdens.length) {
+  // Atualiza label de resultado da busca
+  const _resEl = document.getElementById('audit-busca-resultado');
+  if (_resEl) {
+    if (_buscaVia) {
+      const total = [...viasAtivas, ...viasFinalizadas].filter(v => v.via).length;
+      const encontradas = new Set(todasOrdens.map(v => v.via)).size;
+      _resEl.textContent = encontradas > 0
+        ? `${encontradas} via(s) encontrada(s)`
+        : '⚠️ Via não encontrada';
+      _resEl.style.color = encontradas > 0 ? 'var(--fc-green)' : '#ef4444';
+    } else {
+      _resEl.textContent = '';
+    }
+  }
+
+  if (!todasOrdens.length && !_buscaVia) {
     container.innerHTML = '<div class="empty" style="padding:40px 0"><div class="empty-ico">📋</div><p>Nenhuma ordem de armazenagem encontrada.</p></div>';
+    return;
+  }
+  if (!todasOrdens.length && _buscaVia) {
+    container.innerHTML = '<div class="empty" style="padding:40px 0"><div class="empty-ico">🔍</div><p>Nenhuma via encontrada para <strong>' + _buscaVia + '</strong>.</p></div>';
     return;
   }
 
