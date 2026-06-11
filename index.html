@@ -320,6 +320,17 @@ input[readonly] { background-color: var(--surface3); cursor: default; color: var
 .tc2-btn-cancel:hover{background:var(--fc-red-bg);}
 .tc2-btn-print{background:var(--surface);border-color:var(--border2);color:var(--muted2);flex-shrink:0;min-width:38px;}
 .tc2-btn-print:hover{color:var(--text);border-color:var(--muted2);}
+/* ===== GRID DE VIAS CONFERÊNCIA ===== */
+.via-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;padding-bottom:4px;}
+.via-card{background:var(--surface);border:1.5px solid var(--border2);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all .18s;position:relative;border-left:3px solid var(--blue);}
+.via-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);border-color:var(--blue);}
+.via-card-ativa{border-left-color:var(--amber)!important;opacity:.8;cursor:default;}
+.via-card-num{font-size:9px;font-weight:700;color:var(--muted2);font-family:'DM Mono',monospace;letter-spacing:.5px;margin-bottom:3px;text-transform:uppercase;}
+.via-card-forn{font-size:12px;font-weight:700;color:var(--text);line-height:1.2;margin-bottom:6px;}
+.via-card-uma{font-size:11px;font-weight:600;color:var(--muted2);}
+.via-card-badge{position:absolute;top:7px;right:8px;font-size:9px;font-weight:700;border-radius:5px;padding:2px 6px;background:var(--amber-bg);color:#92400e;}
+.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:600px){.upload-grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -362,7 +373,42 @@ input[readonly] { background-color: var(--surface3); cursor: default; color: var
   <button class="tab-btn" id="tab-btn-auditoria" onclick="showTab('auditoria')">🔎 Auditoria</button>
 </div>
 
-<div id="view-upload" class="wrapper"><div class="card"><div class="card-hdr"><div class="card-ico red">📋</div><div><div class="card-ttl">Planilha de Endereços</div><div class="card-sub">Detalhamento WMS · Endereços ocupados do CD</div></div></div><div class="card-body"><div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="onDrop(event)"><input type="file" id="file-input" accept=".xlsx,.xls" onchange="handleFile(this)"><div class="dz-icon">📂</div><p>Toque para selecionar ou arraste<br><strong>a planilha de Detalhamento</strong></p></div><div id="file-info" style="display:none" class="file-ok"><span style="font-size:20px">✅</span><div><div class="file-ok-name" id="file-name"></div><div class="file-ok-sub" id="file-sub"></div></div></div><div style="margin-top:12px"><button class="btn btn-red" id="btn-processar" onclick="processar()" disabled>⚡ Processar Planilha</button></div></div></div></div>
+<div id="view-upload" class="wrapper">
+  <div class="upload-grid">
+    <!-- Card 1: Planilha de Conferência (nova — primária) -->
+    <div class="card" style="border-left:3px solid var(--blue)">
+      <div class="card-hdr"><div class="card-ico" style="background:rgba(37,99,235,.1)">📋</div><div><div class="card-ttl">Planilha de Conferência</div><div class="card-sub">Vias liberadas para armazenagem</div></div></div>
+      <div class="card-body">
+        <div class="drop-zone" id="drop-zone-conf" onclick="document.getElementById('file-input-conf').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="onDropConferencia(event)">
+          <input type="file" id="file-input-conf" accept=".xlsx,.xls" onchange="handleFileConferencia(this)">
+          <div class="dz-icon">📋</div>
+          <p>Toque para selecionar ou arraste<br><strong>a planilha de Conferência</strong></p>
+        </div>
+        <div id="file-info-conf" style="display:none" class="file-ok">
+          <span style="font-size:20px">✅</span>
+          <div><div class="file-ok-name" id="file-name-conf"></div><div class="file-ok-sub" id="file-sub-conf"></div></div>
+        </div>
+        <div style="margin-top:12px"><button class="btn" style="background:var(--blue);color:#fff;width:100%;" id="btn-processar-conf" onclick="processarConferencia()" disabled>⚡ Processar Conferência</button></div>
+      </div>
+    </div>
+    <!-- Card 2: Planilha de Detalhamento WMS (existente — secundária) -->
+    <div class="card">
+      <div class="card-hdr"><div class="card-ico red">📦</div><div><div class="card-ttl">Planilha de Endereços</div><div class="card-sub">Detalhamento WMS · Endereços ocupados</div></div></div>
+      <div class="card-body">
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="onDrop(event)">
+          <input type="file" id="file-input" accept=".xlsx,.xls" onchange="handleFile(this)">
+          <div class="dz-icon">📂</div>
+          <p>Toque para selecionar ou arraste<br><strong>a planilha de Detalhamento</strong></p>
+        </div>
+        <div id="file-info" style="display:none" class="file-ok">
+          <span style="font-size:20px">✅</span>
+          <div><div class="file-ok-name" id="file-name"></div><div class="file-ok-sub" id="file-sub"></div></div>
+        </div>
+        <div style="margin-top:12px"><button class="btn btn-red" id="btn-processar" onclick="processar()" disabled>⚡ Processar Planilha</button></div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div id="view-config" class="wrapper" style="display:none"><div class="card"><div class="card-hdr"><div class="card-ico green">🗺️</div><div><div class="card-ttl">Layout do CD · Rua × Linha</div><div class="card-sub">Defina qual linha de produto cada rua comporta (ruas 1–30)</div></div><button onclick="resetToDefault()" style="margin-left:auto;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;color:var(--muted2);cursor:pointer;font-family:'Sora',sans-serif;font-size:11px;font-weight:600;padding:7px 13px;">↺ Restaurar Padrão</button></div><div class="card-body"><div class="config-note">⚡ Layout pré-definido carregado automaticamente. Ajuste as ruas que precisar — as alterações são salvas automaticamente.<br>⚠️ <strong>Nível 1 bloqueado para armazenagem</strong> — reservado exclusivamente para picking (níveis 2+ são sugeridos).</div><div class="rua-grid" id="rua-grid"></div></div></div></div>
 
@@ -387,17 +433,26 @@ input[readonly] { background-color: var(--surface3); cursor: default; color: var
       <button class="fin-export-btn" onclick="exportarEndereçosLivres()">⬇ Exportar endereços livres</button>
     </div>
   </div>
-  <div class="card"><div class="card-hdr"><div class="card-ico green">🔍</div><div><div class="card-ttl">Buscar Fornecedor</div><div class="card-sub">Digite ou selecione o fornecedor da via cega</div></div></div><div class="card-body">
-    <div class="combobox" id="fornecedor-combobox">
-      <div class="combobox-input">
-        <input type="text" id="fornecedor-input" placeholder="Ex: LEÃO METAIS, BRASMOTOR..." autocomplete="off">
-        <button class="combobox-btn" id="combobox-toggle" type="button">▼</button>
-      </div>
+  <div class="card" id="card-vias-conf">
+    <div class="card-hdr">
+      <div class="card-ico" style="background:rgba(37,99,235,.1)">📋</div>
+      <div><div class="card-ttl">Vias Disponíveis</div><div class="card-sub" id="vias-conf-sub">Importe a Planilha de Conferência para ver as vias disponíveis</div></div>
     </div>
-    <div id="cadastrar-fornecedor-area" style="margin-top: 8px;"></div>
-  </div></div>
+    <div class="card-body">
+      <div id="vias-filtros" style="display:none;gap:8px;margin-bottom:10px;display:flex;flex-wrap:wrap;">
+        <input id="vias-busca-via" type="text" placeholder="Buscar por nº da via..." oninput="renderViasCards()" style="flex:1;min-width:120px;padding:8px 12px;border:1.5px solid var(--border2);border-radius:8px;font-family:'Sora',sans-serif;font-size:12px;background:var(--surface2);color:var(--text);outline:none;">
+        <select id="vias-filtro-forn" onchange="renderViasCards()" style="flex:2;min-width:150px;padding:8px 12px;border:1.5px solid var(--border2);border-radius:8px;font-family:'Sora',sans-serif;font-size:12px;background:var(--surface2);color:var(--text);outline:none;"></select>
+        <div style="display:flex;align-items:center;gap:4px;flex:1;min-width:150px;">
+          <input id="vias-filtro-data" type="date" onchange="renderViasCards()" style="flex:1;padding:8px 10px;border:1.5px solid var(--border2);border-radius:8px;font-family:'Sora',sans-serif;font-size:12px;background:var(--surface2);color:var(--text);outline:none;cursor:pointer;">
+          <button onclick="document.getElementById('vias-filtro-data').value='';renderViasCards();" title="Limpar data" style="background:none;border:none;font-size:15px;cursor:pointer;color:var(--muted2);padding:0 4px;line-height:1;" id="btn-limpar-data-vias">✕</button>
+        </div>
+      </div>
+      <div id="vias-conferencia-grid"><div style="color:var(--muted2);font-size:12px;text-align:center;padding:20px 0;background:var(--surface2);border-radius:8px;">📋 Planilha de Conferência não importada</div></div>
+    </div>
+  </div>
   <div class="fin-filters" id="ativas-filters" style="margin-bottom:8px;">
-    <label style="font-size:12px;font-weight:600;color:var(--muted2);align-self:center;">📅 Filtrar por data de criação:</label>
+    <input type="text" class="fin-filter-input" id="ativas-filter-via" placeholder="🔍 Buscar por nº da via..." oninput="renderActiveTasks()" style="font-family:'Sora',sans-serif;font-size:13px;">
+    <label style="font-size:12px;font-weight:600;color:var(--muted2);align-self:center;">📅</label>
     <input type="date" class="fin-filter-sel" id="ativas-filter-data" onchange="renderActiveTasks()" title="Filtrar por data de criação" style="cursor:pointer;font-family:'Sora',sans-serif;font-size:13px;flex:0 0 auto;">
     <button onclick="document.getElementById('ativas-filter-data').value='';renderActiveTasks();" title="Limpar filtro de data" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted2);padding:0 4px;opacity:0;transition:opacity .2s;" id="btn-limpar-data-ativas">✕</button>
   </div>
@@ -757,6 +812,67 @@ let finalizedAddressesSet = new Set();
 // Fingerprint da última planilha importada (para detectar troca de planilha)
 let planilhaHash = '';
 
+// ================== PLANILHA DE CONFERÊNCIA ==================
+let viasConferenciaMap = {}; // NR_VIACEGA → {via, fornecedor, umas, status_conf, codigos:[]}
+let conferenciaPlanilhaCarregada = false;
+let _rawFileConf = null;
+let _viasFiltroBusca = '';
+let _viasFiltroForn = '';
+let _viasFiltroData = '';
+let _viaStatsCache = {}; // nrVia → {total, end, pend, umasPend:[{mascUMA}], umasEnd:[{mascUMA,endereco}]}
+let _pendingUmas = []; // UMAs pendentes da via selecionada no modal atual
+
+// Pré-computa stats de todas as vias (chamado após rawRows + viaCegaMap prontos)
+function buildAllViaStats() {
+  _viaStatsCache = {};
+  if (!rawRows.length || !viaCegaMap.size) return;
+  const r0 = rawRows[0];
+  const colNr  = detectarColuna(r0, 'nr vcega', 'nrvcega', 'nr_vcega', 'vcega');
+  const colEp  = detectarColuna(r0, 'estq. proprietario', 'estq proprietario', 'proprietario');
+  const colUma = detectarColuna(r0, 'mascara uma', 'mascarauma', 'mascara_uma');
+  const colSt  = detectarColuna(r0, 'status uma', 'statusuma', 'status_uma', 'status');
+  const colEnd = detectarColuna(r0, 'endereco', 'endereço', 'address');
+  if (!colNr || !colUma) return;
+  // Varre rawRows uma única vez: monta mapa chave → Map<mascUMA, {isEnd, endereco}>
+  const viaUmaStatus = new Map();
+  for (const r of rawRows) {
+    const nr  = String(r[colNr]  ?? '').trim();
+    const ep  = colEp ? String(r[colEp] ?? '').trim() : '';
+    const uma = String(r[colUma] ?? '').trim();
+    if (!nr || !uma) continue;
+    const chave = nr + '|' + converterCodEmpresa(ep);
+    const status = colSt ? String(r[colSt] ?? '').trim() : '';
+    const end    = colEnd ? String(r[colEnd] ?? '').trim() : '';
+    const isEnd  = status === 'Endereçada' || /MTG|STG/i.test(end);
+    if (!viaUmaStatus.has(chave)) viaUmaStatus.set(chave, new Map());
+    const m = viaUmaStatus.get(chave);
+    if (!m.has(uma) || isEnd) m.set(uma, { isEnd, endereco: end });
+  }
+  // Monta stats por via usando viaCegaMap como referência de UMAs
+  for (const [chave, umasVia] of viaCegaMap) {
+    const nr = chave.split('|')[0];
+    const m  = viaUmaStatus.get(chave) || new Map();
+    const umasPend = [], umasEnd = [];
+    for (const u of umasVia) {
+      const info = m.get(u.mascUMA);
+      if (info && info.isEnd) umasEnd.push({ mascUMA: u.mascUMA, endereco: info.endereco });
+      else                    umasPend.push({ mascUMA: u.mascUMA });
+    }
+    _viaStatsCache[nr] = { total: umasVia.length, end: umasEnd.length, pend: umasPend.length, umasPend, umasEnd };
+  }
+}
+
+function excelDateToStr(serial) {
+  if (!serial || isNaN(Number(serial))) return '';
+  const ms = (Number(serial) - 25569) * 86400 * 1000;
+  const d = new Date(ms);
+  if (isNaN(d.getTime())) return '';
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 // ================== ESTADO VIAS CEGAS ==================
 let rawRowsVC = []; // linhas brutas da planilha de vias cegas
 let viaCegaMap = new Map(); // chave "nrVCega|codEmpresa" → [{ nrVCega, codEmpresa, mascUMA }]
@@ -1028,6 +1144,226 @@ function reconciliarEndereçosFinalizados(novoOccupiedSet, novoCdLayout) {
   }
 }
 
+// ================== PLANILHA DE CONFERÊNCIA ==================
+function handleFileConferencia(input) {
+  const f = input.files[0]; if (!f) return;
+  _rawFileConf = f;
+  document.getElementById('file-name-conf').textContent = f.name;
+  document.getElementById('file-sub-conf').textContent = (f.size/1024).toFixed(1) + ' KB';
+  document.getElementById('file-info-conf').style.display = 'flex';
+  document.getElementById('drop-zone-conf').style.display = 'none';
+  document.getElementById('btn-processar-conf').disabled = false;
+  document.getElementById('btn-processar-conf')._file = f;
+}
+function onDropConferencia(e) {
+  e.preventDefault();
+  const dz = document.getElementById('drop-zone-conf'); if(dz) dz.classList.remove('drag');
+  if (e.dataTransfer.files[0]) {
+    const inp = document.getElementById('file-input-conf');
+    const dt = new DataTransfer(); dt.items.add(e.dataTransfer.files[0]);
+    inp.files = dt.files;
+    handleFileConferencia(inp);
+  }
+}
+function processarConferencia() {
+  const f = _rawFileConf || document.getElementById('btn-processar-conf')?._file; if (!f) return;
+  showLoader(true);
+  const reader = new FileReader();
+  reader.onload = ev => {
+    setTimeout(() => {
+      try {
+        const wb = XLSX.read(ev.target.result, {type:'array'});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+        // Normaliza NR_VIACEGA: Excel armazena como float (ex: 1088919.0) → converte para string inteira
+        const normVia = raw => {
+          if (raw === null || raw === undefined || raw === '') return '';
+          return typeof raw === 'number' ? String(Math.round(raw)) : String(raw).trim();
+        };
+        // Monta mapa: NR_VIACEGA → {via, fornecedor, umas, status_conf, codigos}
+        viasConferenciaMap = {};
+        for (let i = 1; i < rows.length; i++) {
+          const r = rows[i];
+          const via = normVia(r[0]);
+          if (!via) continue;
+          const statusConf = String(r[8]||'').trim();
+          const fantas = String(r[12]||'').trim();
+          const codProd = normVia(r[9]);
+          const dataConf = excelDateToStr(r[5]);
+          const codEmp = String(r[1]||'').trim();
+          if (!viasConferenciaMap[via]) {
+            viasConferenciaMap[via] = {via, fornecedor: fantas, umas: 0, status_conf: statusConf, data_conf: dataConf, cod_emp: codEmp, codigos: new Set(), umaIds: new Set()};
+          }
+          const idUma = normVia(r[2]);
+          if (idUma) viasConferenciaMap[via].umaIds.add(idUma);
+          if (codProd) viasConferenciaMap[via].codigos.add(codProd);
+        }
+        // Converte Sets para Array e calcula umas únicas
+        Object.values(viasConferenciaMap).forEach(v => {
+          v.umas = v.umaIds.size;
+          v.codigos = Array.from(v.codigos);
+          delete v.umaIds;
+        });
+        conferenciaPlanilhaCarregada = true;
+        const total = Object.keys(viasConferenciaMap).length;
+        const disponiveis = Object.values(viasConferenciaMap).filter(v => v.status_conf === 'S').length;
+        showLoader(false);
+        // Torna as tabs visíveis sem navegar — o usuário permanece na tela de upload
+        // para poder processar a segunda planilha se ainda não tiver feito
+        const tabNav = document.getElementById('tab-nav');
+        if (tabNav) tabNav.style.display = 'flex';
+        renderViasDisponiveis();
+        showToast(`✅ Conferência: ${disponiveis} via(s) disponíveis de ${total} · Agora processe a Planilha de Endereços`);
+      } catch(err) { showLoader(false); alert('Erro ao processar Conferência: ' + err.message); }
+    }, 50);
+  };
+  reader.readAsArrayBuffer(f);
+}
+
+function renderViasDisponiveis() {
+  const container = document.getElementById('vias-conferencia-grid');
+  const subEl = document.getElementById('vias-conf-sub');
+  const filtrosEl = document.getElementById('vias-filtros');
+  if (!container) return;
+  if (!conferenciaPlanilhaCarregada) {
+    container.innerHTML = '<div style="color:var(--muted2);font-size:12px;text-align:center;padding:20px 0;background:var(--surface2);border-radius:8px;">📋 Planilha de Conferência não importada</div>';
+    if (subEl) subEl.textContent = 'Importe a Planilha de Conferência para ver as vias disponíveis';
+    if (filtrosEl) filtrosEl.style.display = 'none';
+    return;
+  }
+  const todas = Object.values(viasConferenciaMap);
+  const disponiveis = todas.filter(v => v.status_conf === 'S');
+  const indisponiveis = todas.filter(v => v.status_conf !== 'S');
+  if (subEl) subEl.textContent = `${disponiveis.length} via(s) disponível(is) · ${indisponiveis.length} pendente(s)`;
+  // Monta/atualiza o select de fornecedores com opções únicas
+  if (filtrosEl) {
+    filtrosEl.style.display = 'flex';
+    const sel = document.getElementById('vias-filtro-forn');
+    if (sel) {
+      const curForn = sel.value;
+      const fornSet = [...new Set(disponiveis.map(v => v.fornecedor||'').filter(Boolean))].sort();
+      sel.innerHTML = '<option value="">Todos os fornecedores</option>' +
+        fornSet.map(f => `<option value="${escapeHtml(f)}" ${curForn===f?'selected':''}>${escapeHtml(f)}</option>`).join('');
+    }
+  }
+  renderViasCards();
+}
+
+function renderViasCards() {
+  const container = document.getElementById('vias-conferencia-grid');
+  if (!container || !conferenciaPlanilhaCarregada) return;
+  const busca = (document.getElementById('vias-busca-via')?.value || '').trim().toLowerCase();
+  const fornFiltro = document.getElementById('vias-filtro-forn')?.value || '';
+  const dataFiltro = document.getElementById('vias-filtro-data')?.value || '';
+  const viasAtivas = new Set(tarefasAtivas.map(t => String(t.reg.via)));
+  let disponiveis = Object.values(viasConferenciaMap).filter(v => v.status_conf === 'S');
+  if (busca) disponiveis = disponiveis.filter(v => v.via.toLowerCase().includes(busca));
+  if (fornFiltro) disponiveis = disponiveis.filter(v => (v.fornecedor||'') === fornFiltro);
+  if (dataFiltro) disponiveis = disponiveis.filter(v => v.data_conf === dataFiltro);
+  if (disponiveis.length === 0) {
+    container.innerHTML = '<div style="color:var(--muted2);font-size:12px;text-align:center;padding:16px 0;background:var(--surface2);border-radius:8px;">Nenhuma via encontrada com esse filtro</div>';
+    return;
+  }
+  const html = disponiveis.map(v => {
+    const emAndamento = viasAtivas.has(v.via);
+    const badge = emAndamento ? `<span class="via-card-badge">Em andamento</span>` : '';
+    const cls = emAndamento ? 'via-card via-card-ativa' : 'via-card';
+    const onclick = emAndamento ? '' : `onclick="openModalViaCard('${escapeHtml(v.via)}')"`;
+    const stats = _viaStatsCache[v.via];
+    let umaHtml;
+    if (stats) {
+      umaHtml = `<div class="via-card-uma" style="display:flex;flex-direction:column;gap:2px;">
+        <span>📦 ${stats.total} UMA${stats.total!==1?'s':''}</span>
+        <span style="font-size:10px;color:var(--fc-green);font-weight:700;">✅ ${stats.end} endereçada${stats.end!==1?'s':''}</span>
+        <span style="font-size:10px;color:var(--amber);font-weight:700;">⏳ ${stats.pend} pendente${stats.pend!==1?'s':''}</span>
+      </div>`;
+    } else {
+      umaHtml = `<div class="via-card-uma">📦 ${v.umas} UMA${v.umas!==1?'s':''}</div>`;
+    }
+    return `<div class="${cls}" ${onclick}>
+      ${badge}
+      <div class="via-card-num">VIA #${escapeHtml(v.via)}</div>
+      <div class="via-card-forn">${escapeHtml(v.fornecedor||'Fornecedor não identificado')}</div>
+      ${umaHtml}
+    </div>`;
+  }).join('');
+  container.innerHTML = `<div class="via-grid">${html}</div>`;
+}
+
+function openModalViaCard(nrVia) {
+  const viaData = viasConferenciaMap[nrVia]; if (!viaData) return;
+
+  // 1. Busca a via no viaCegaMap usando empresa da planilha de conferência (mesma lógica da Auditoria)
+  const codEmpConv = converterCodEmpresa(viaData.cod_emp || '');
+  const chaveExata = nrVia + '|' + codEmpConv;
+  let chaveVia = viaCegaMap.has(chaveExata) ? chaveExata : null;
+  if (!chaveVia) { // fallback: busca por qualquer empresa da mesma via
+    for (const [k] of viaCegaMap) { if (k.startsWith(nrVia + '|')) { chaveVia = k; break; } }
+  }
+  const umasVia = chaveVia ? (viaCegaMap.get(chaveVia) || []) : [];
+  const totalPaletes = umasVia.length || viaData.umas;
+
+  // 2. Determina linha1 a partir das UMAs da via no rawRows (STATUS = 'Endereçada')
+  let prod = { cod: '', desc: viaData.fornecedor, linha1: '', descLinha1: '', fornecedor: viaData.fornecedor };
+  if (umasVia.length && rawRows.length) {
+    const umaSet = new Set(umasVia.map(u => u.mascUMA));
+    const r0 = rawRows[0];
+    const colUma = detectarColuna(r0, 'mascara uma', 'mascarauma', 'mascara_uma');
+    const colSt  = detectarColuna(r0, 'status uma', 'statusuma', 'status_uma', 'status');
+    const colL1  = detectarColuna(r0, 'linha 1n', 'linha1n', 'linha_1n');
+    const colDL1 = detectarColuna(r0, 'descricao 1n', 'descrl1n', 'descrl 1n');
+    const colCod = detectarColuna(r0, 'codigo', 'código', 'cod');
+    const colDesc= detectarColuna(r0, 'descricao', 'descrição');
+    if (colUma && colL1) {
+      for (const r of rawRows) {
+        const uma = String(r[colUma] ?? '').trim();
+        if (!uma || !umaSet.has(uma)) continue;
+        const status = colSt ? String(r[colSt] ?? '').trim() : '';
+        if (status !== 'Endereçada') continue;
+        const linha1 = String(r[colL1] ?? '').trim();
+        if (!linha1) continue;
+        prod = {
+          cod:       colCod  ? String(r[colCod]  ?? '').trim() : '',
+          desc:      colDesc ? String(r[colDesc] ?? '').trim() : viaData.fornecedor,
+          linha1,
+          descLinha1: colDL1 ? String(r[colDL1] ?? '').trim() : linha1,
+          fornecedor: viaData.fornecedor
+        };
+        break;
+      }
+    }
+  }
+
+  // 3. Fallback: busca pelo CDG_PROD no catálogo se rawRows não resolveu
+  if (!prod.linha1) {
+    for (const cod of viaData.codigos) {
+      const found = catalog.find(c => String(c.cod) === String(cod));
+      if (found) { prod = { ...found, fornecedor: viaData.fornecedor }; break; }
+    }
+  }
+
+  // 4. Stats de UMAs (total / endereçadas / pendentes)
+  const stats = _viaStatsCache[nrVia];
+  _pendingUmas = stats ? stats.umasPend : umasVia.map(u => ({ mascUMA: u.mascUMA }));
+  const pendentes = stats ? stats.pend : totalPaletes;
+
+  // 5. Abre o modal com via readonly, paletes = pendentes
+  openModal(prod, viaData.fornecedor);
+  const viaInput = document.getElementById('modal-via');
+  if (viaInput) { viaInput.value = nrVia; viaInput.readOnly = true; }
+  const paletesInput = document.getElementById('modal-paletes');
+  if (paletesInput) { paletesInput.value = pendentes; paletesInput.readOnly = true; }
+
+  // 6. Exibe bloco de info de UMAs no modal
+  const statsEl = document.getElementById('modal-uma-stats');
+  if (statsEl && stats) {
+    document.getElementById('modal-uma-total').textContent = stats.total;
+    document.getElementById('modal-uma-end').textContent   = stats.end;
+    document.getElementById('modal-uma-pend').textContent  = stats.pend;
+    statsEl.style.display = 'flex';
+  }
+}
+
 function processar(){
   const f=document.getElementById('btn-processar')?._file;if(!f)return;
   showLoader(true);
@@ -1157,7 +1493,7 @@ function resetToDefault(){if(!confirm('Restaurar layout padrão?'))return; local
 function renderTiposRua(){const grid=document.getElementById('tipos-rua-grid'); if(!grid)return; const tipos=['porta_palete','blocado','stage']; grid.innerHTML=RUAS.map(rua=>{const atual=tiposRua[rua]||'porta_palete'; return `<div class="rua-item" style="margin-bottom:8px"><div class="rua-hdr"><span class="rua-num">RUA ${rua}</span></div><select id="tipo-${rua}" class="tipo-rua-select">${tipos.map(t=>`<option value="${t}" ${atual===t?'selected':''}>${t==='porta_palete'?'Porta Palete':t==='blocado'?'Blocado Dinâmico':'Stage'}</option>`).join('')}</select></div>`;}).join('');}
 function salvarTiposRua(){RUAS.forEach(rua=>{const sel=document.getElementById(`tipo-${rua}`); if(sel)tiposRua[rua]=sel.value;}); salvarDados(); showToast('Tipos de rua salvos!');}
 function showTabs(){const nav=document.getElementById('tab-nav');if(nav)nav.style.display='flex'; showTab('ativas');}
-function showTab(tab){['upload','config','tipos','ativas','finalizadas','mapa','layout','auditoria'].forEach(t=>{const view=document.getElementById(`view-${t}`);if(view)view.style.display=t===tab?'':'none'; const btn=document.getElementById(`tab-btn-${t}`);if(btn)btn.classList.toggle('active',t===tab);}); if(tab==='ativas')renderActiveTasks(); if(tab==='finalizadas')renderCompletedTasks(); if(tab==='mapa')renderMapa(); if(tab==='layout')renderLayout(); if(tab==='auditoria')renderAuditoria();}
+function showTab(tab){['upload','config','tipos','ativas','finalizadas','mapa','layout','auditoria'].forEach(t=>{const view=document.getElementById(`view-${t}`);if(view)view.style.display=t===tab?'':'none'; const btn=document.getElementById(`tab-btn-${t}`);if(btn)btn.classList.toggle('active',t===tab);}); if(tab==='ativas'){renderActiveTasks();renderViasDisponiveis();} if(tab==='finalizadas')renderCompletedTasks(); if(tab==='mapa')renderMapa(); if(tab==='layout')renderLayout(); if(tab==='auditoria')renderAuditoria();}
 
 // ================== COMBOBOX FORNECEDORES ==================
 let floatingDropdown=null, isDropdownOpen=false;
@@ -1222,7 +1558,13 @@ function openModal(prod,fornecedor){
   document.getElementById('arm-modal').classList.add('open');
   setTimeout(()=>document.getElementById('modal-via').focus(),120);
 }
-function closeModal(){document.getElementById('arm-modal').classList.remove('open'); _pendingProd=null; _editingTaskId=null;}
+function closeModal(){
+  document.getElementById('arm-modal').classList.remove('open');
+  _pendingProd=null; _editingTaskId=null; _pendingUmas=[];
+  const vi=document.getElementById('modal-via'); if(vi) vi.readOnly=false;
+  const pi=document.getElementById('modal-paletes'); if(pi) pi.readOnly=false;
+  const st=document.getElementById('modal-uma-stats'); if(st) st.style.display='none';
+}
 function confirmModal(){
   const via=document.getElementById('modal-via').value.trim();
   const forn=document.getElementById('modal-forn').value.trim();
@@ -1439,6 +1781,7 @@ function reconstruirViaCegaMapFromDetalhamento() {
   }
 
   console.log('viaCegaMap reconstruído:', viaCegaMap.size, 'vias,', Array.from(viaCegaMap.values()).reduce((s,v)=>s+v.length,0), 'UMAs únicas');
+  buildAllViaStats();
 }
 
 let _auditFiltro    = 'todas';
@@ -2257,13 +2600,23 @@ function criarNovaTarefa(prod, reg) {
     restante -= pegar;
   }
   const totalAlocados = reg.paletes - restante;
+  // Pareia cada UMA pendente com um endereço alocado (na ordem de alocação)
+  const flatAddrs = alocacao.flatMap(a => a.enderecos);
+  const umaPairs = (_pendingUmas.length ? _pendingUmas : []).map((u, i) =>
+    i < flatAddrs.length
+      ? { mascUMA: u.mascUMA, ...flatAddrs[i] }
+      : { mascUMA: u.mascUMA, semEndereco: true }
+  );
+  const stats = _viaStatsCache[reg.via];
   const createdAt = Date.now();
   const task = {
     id: taskIdCounter,
     prod: prodCopy,
     reg: { via: reg.via, forn: reg.forn, mat: reg.mat, emp: reg.emp, paletes: reg.paletes, nivelMin: reg.nivelMin, nivelMax: reg.nivelMax },
     alocacao, totalAlocados, faltam: restante, ruasValidas, createdAt,
-    createdBy: _operadorNome
+    createdBy: _operadorNome,
+    umaPairs,
+    viaStats: stats ? { total: stats.total, end: stats.end, pend: stats.pend } : null
   };
   taskIdCounter++;
   tarefasAtivas.push(task);
@@ -2347,18 +2700,36 @@ function imprimirTarefa(task){
   const now=new Date(); const dataHora=now.toLocaleString('pt-BR');
   let tempo; if(totalSeconds!==undefined)tempo=formatTime(totalSeconds); else tempo=formatTime(Math.floor((Date.now()-createdAt)/1000));
   let tableRows=''; let contador=1;
-  for(let aloc of alocacao){
-    for(let addr of aloc.enderecos){
-      tableRows+=`<tr><td style="text-align:center;font-size:16px">☐</td><td style="font-weight:700">${contador}</td><td style="font-family:monospace;font-size:14px;font-weight:700;color:#009B48">${formatFullAddress(addr.rua,addr.pred,addr.nivel,addr.apto)}</td><td>${addr.rua}</td><td>${addr.pred}</td><td>${addr.nivel}</td><td>${addr.apto}</td></tr>`;
+  const usePairs = task.umaPairs && task.umaPairs.length > 0;
+  if (usePairs) {
+    for (const pair of task.umaPairs) {
+      const hasAddr = !pair.semEndereco && pair.rua !== undefined;
+      tableRows += `<tr>
+        <td style="text-align:center;font-size:16px">☐</td>
+        <td style="font-weight:700">${contador}</td>
+        <td style="font-family:monospace;font-size:12px;font-weight:700;color:#1e40af">${pair.mascUMA||'—'}</td>
+        <td style="font-family:monospace;font-size:14px;font-weight:700;color:${hasAddr?'#009B48':'#dc2626'}">${hasAddr?formatFullAddress(pair.rua,pair.pred,pair.nivel,pair.apto):'Sem endereço'}</td>
+        <td>${hasAddr?pair.rua:'—'}</td><td>${hasAddr?pair.pred:'—'}</td><td>${hasAddr?pair.nivel:'—'}</td><td>${hasAddr?pair.apto:'—'}</td>
+      </tr>`;
       contador++;
     }
+  } else {
+    for(let aloc of alocacao){
+      for(let addr of aloc.enderecos){
+        tableRows+=`<tr><td style="text-align:center;font-size:16px">☐</td><td style="font-weight:700">${contador}</td><td style="font-family:monospace;font-size:12px;font-weight:700;color:#1e40af">—</td><td style="font-family:monospace;font-size:14px;font-weight:700;color:#009B48">${formatFullAddress(addr.rua,addr.pred,addr.nivel,addr.apto)}</td><td>${addr.rua}</td><td>${addr.pred}</td><td>${addr.nivel}</td><td>${addr.apto}</td></tr>`;
+        contador++;
+      }
+    }
   }
-  const printHtml=`<div style="max-width:700px;margin:0 auto;font-family:'Segoe UI',sans-serif;"><div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:4px solid #E30613;"><div style="display:flex;gap:4px;height:40px"><div style="width:8px;background:#E30613;border-radius:2px"></div><div style="width:4px;background:#009B48;border-radius:2px"></div></div><div><div style="font-size:14px;font-weight:800;color:#E30613;letter-spacing:.3px">FERREIRA COSTA</div><div style="font-size:9px;font-weight:600;color:#6B7280;letter-spacing:2px">HOME CENTER · ARMAZENAGEM WMS</div></div><div style="margin-left:auto;text-align:right;font-size:11px;color:#6B7280"><div>${dataHora}</div><div style="font-weight:600;color:#009B48">Duração: ${tempo}</div></div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;background:#f0f2f5;border-radius:8px;padding:12px"><div><div style="font-size:9px;color:#9BA3B0;text-transform:uppercase;margin-bottom:2px">Via Cega</div><div style="font-size:15px;font-weight:700">${reg.via}</div></div><div><div style="font-size:9px;color:#9BA3B0;text-transform:uppercase;margin-bottom:2px">Fornecedor</div><div style="font-size:13px;font-weight:600">${reg.forn}</div></div><div><div style="font-size:9px;color:#9BA3B0;text-transform:uppercase;margin-bottom:2px">Linha</div><div style="font-size:12px;font-weight:600;color:#009B48">${prod.descLinha1}</div></div><div><div style="font-size:9px;color:#9BA3B0;text-transform:uppercase;margin-bottom:2px">Empilhador</div><div style="font-size:13px;font-weight:700">${reg.emp}</div></div><div><div style="font-size:9px;color:#9BA3B0;text-transform:uppercase;margin-bottom:2px">Matrícula</div><div style="font-family:monospace;font-size:13px;font-weight:700">${reg.mat}</div></div><div><div style="font-size:9px;color:#9BA3B0;text-transform:uppercase;margin-bottom:2px">Paletes</div><div style="font-size:15px;font-weight:700;color:#009B48">${reg.paletes}</div></div></div><table style="width:100%;border-collapse:collapse;margin-bottom:32px"><thead><tr style="background:#1A1D23;color:#fff"><th style="padding:8px;text-align:center">✓</th><th style="padding:8px">#</th><th style="padding:8px">Endereço</th><th style="padding:8px">Rua</th><th style="padding:8px">Prédio</th><th style="padding:8px">Nível</th><th style="padding:8px">Apto</th></tr></thead><tbody>${tableRows}</tbody></table><div style="display:flex;justify-content:space-between;margin-top:32px"><div style="text-align:center;width:45%;border-top:2px solid #1A1D23;padding-top:12px;font-size:11px">Assinatura do Empilhador<br><strong>${reg.emp} · Mat. ${reg.mat}</strong></div><div style="text-align:center;width:45%;border-top:2px solid #1A1D23;padding-top:12px;font-size:11px">Assinatura do Supervisor<br>(após conferência)</div></div></div>`;
+  const viaStats = task.viaStats;
+  const statsLine = viaStats ? `<span style="color:#009B48">✅ ${viaStats.end} endereçadas antes</span> · <span style="color:#f59e0b">⏳ ${viaStats.pend} pendentes (esta ordem)</span> · <span>📦 ${viaStats.total} total</span>` : '';
+  const printHtml=`<div style="max-width:700px;margin:0 auto;font-family:'Segoe UI',sans-serif;"><div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:4px solid #E30613;"><div style="display:flex;gap:4px;height:40px"><div style="width:8px;background:#E30613;border-radius:2px"></div><div style="width:4px;background:#009B48;border-radius:2px"></div></div><div><div style="font-size:14px;font-weight:800;color:#E30613;letter-spacing:.3px">FERREIRA COSTA</div><div style="font-size:9px;font-weight:600;color:#6B7280;letter-spacing:2px">HOME CENTER · ARMAZENAGEM WMS</div></div><div style="margin-left:auto;text-align:right;font-size:11px;color:#6B7280"><div>${dataHora}</div><div style="font-weight:600;color:#009B48">Duração: ${tempo}</div></div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;background:#f0f2f5;border-radius:8px;padding:12px"><div><div style="font-size:9px;color:#9BA3B0;text-transform:uppercase;margin-bottom:2px">Via Cega</div><div style="font-size:15px;font-weight:700">${reg.via}</div></div><div><div style="font-size:9px;color:#9BA3B0;text-transform:uppercase;margin-bottom:2px">Fornecedor</div><div style="font-size:13px;font-weight:600">${reg.forn}</div></div><div><div style="font-size:9px;color:#9BA3B0;text-transform:uppercase;margin-bottom:2px">Linha</div><div style="font-size:12px;font-weight:600;color:#009B48">${prod.descLinha1}</div></div><div><div style="font-size:9px;color:#9BA3B0;text-transform:uppercase;margin-bottom:2px">Empilhador</div><div style="font-size:13px;font-weight:700">${reg.emp}</div></div><div><div style="font-size:9px;color:#9BA3B0;text-transform:uppercase;margin-bottom:2px">Matrícula</div><div style="font-family:monospace;font-size:13px;font-weight:700">${reg.mat}</div></div><div><div style="font-size:9px;color:#9BA3B0;text-transform:uppercase;margin-bottom:2px">Paletes</div><div style="font-size:15px;font-weight:700;color:#009B48">${reg.paletes}</div></div></div>${viaStats?`<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:8px 14px;margin-bottom:12px;font-size:11px;font-weight:600;display:flex;gap:18px;flex-wrap:wrap;">${statsLine}</div>`:''}<table style="width:100%;border-collapse:collapse;margin-bottom:32px"><thead><tr style="background:#1A1D23;color:#fff"><th style="padding:8px;text-align:center">✓</th><th style="padding:8px">#</th><th style="padding:8px">Máscara UMA</th><th style="padding:8px">Endereço</th><th style="padding:8px">Rua</th><th style="padding:8px">Prédio</th><th style="padding:8px">Nível</th><th style="padding:8px">Apto</th></tr></thead><tbody>${tableRows}</tbody></table><div style="display:flex;justify-content:space-between;margin-top:32px"><div style="text-align:center;width:45%;border-top:2px solid #1A1D23;padding-top:12px;font-size:11px">Assinatura do Empilhador<br><strong>${reg.emp} · Mat. ${reg.mat}</strong></div><div style="text-align:center;width:45%;border-top:2px solid #1A1D23;padding-top:12px;font-size:11px">Assinatura do Supervisor<br>(após conferência)</div></div></div>`;
   const pw=window.open('','_blank','width=800,height=900');
   pw.document.write(`<!DOCTYPE html><html><head><title>Armazenagem Via ${reg.via}</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap"><style>body{margin:20px;}tr:nth-child(even){background:#f7f8fa;}th,td{border:1px solid #e0e3e8;}</style></head><body>${printHtml}<script>window.onload=()=>window.print()<\/script></body></html>`);
   pw.document.close();
 }
 function renderActiveTasks(){
+  renderViasDisponiveis();
   const container=document.getElementById('tasks-ativas-container');
   if(!container)return;
   const keyTaskMap={};
@@ -2366,9 +2737,11 @@ function renderActiveTasks(){
   const conflictKeys=new Set(Object.keys(keyTaskMap).filter(k=>keyTaskMap[k].length>1));
   const badge=document.getElementById('badge-ativas');if(badge){badge.textContent=tarefasAtivas.length; badge.style.display=tarefasAtivas.length>0?'inline-block':'none';}
   const dataFAtivas=document.getElementById('ativas-filter-data')?.value||'';
+  const viaFAtivas=(document.getElementById('ativas-filter-via')?.value||'').trim().toLowerCase();
   const btnLimparAtivas=document.getElementById('btn-limpar-data-ativas');
   if(btnLimparAtivas)btnLimparAtivas.style.opacity=dataFAtivas?'1':'0';
-  const tarefasFiltradas=dataFAtivas?tarefasAtivas.filter(t=>{if(!t.createdAt)return false;const d=new Date(t.createdAt);const dl=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');return dl===dataFAtivas;}):tarefasAtivas;
+  let tarefasFiltradas=dataFAtivas?tarefasAtivas.filter(t=>{if(!t.createdAt)return false;const d=new Date(t.createdAt);const dl=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');return dl===dataFAtivas;}):tarefasAtivas;
+  if(viaFAtivas)tarefasFiltradas=tarefasFiltradas.filter(t=>String(t.reg.via||'').toLowerCase().includes(viaFAtivas));
   // KPIs — todos respondem ao filtro de data
   const kpiOrdens=tarefasFiltradas.length;
   const kpiPaletes=tarefasFiltradas.reduce((s,t)=>s+t.reg.paletes,0);
@@ -2887,7 +3260,7 @@ function modalProcessar() {
 </script>
 
 <!-- MODAL DE CRIAÇÃO DE TAREFA (COM NÍVEL MÍNIMO E MÁXIMO) -->
-<div class="modal-overlay" id="arm-modal"><div class="modal-box"><div class="modal-header"><div class="modal-header-ico">📦</div><div><div class="modal-header-title">Registrar Armazenagem</div><div class="modal-header-sub">Confirme os dados da via cega</div></div></div><div class="modal-prod-bar"><div><div class="modal-prod-cod" id="modal-cod">—</div><div class="modal-prod-name" id="modal-name">—</div></div><div class="modal-prod-tag" id="modal-linha">—</div></div><div class="modal-body"><div class="mfield"><label>Via Cega <span class="modal-required">*</span></label><div class="combobox" id="modal-via-combobox"><div class="combobox-input"><input type="text" id="modal-via" placeholder="Digite ou selecione a via cega..." autocomplete="off" oninput="filtrarViasModal()" onfocus="abrirDropdownViaModal()"><button class="combobox-btn" type="button" onclick="toggleDropdownViaModal()">▼</button></div></div><div id="modal-via-warn" style="font-size:10px;color:var(--fc-red);margin-top:3px;display:none;">⚠️ Via não encontrada na planilha</div></div><div class="mfield"><label>Fornecedor <span class="modal-required">*</span></label><input id="modal-forn" type="text" placeholder="Nome do fornecedor..." readonly></div><div class="mfield"><label>Empilhador <span class="modal-required">*</span></label><select id="modal-emp-select" onchange="onEmpilhadorChange()" style="width:100%;padding:11px 14px;border:1.5px solid var(--border2);border-radius:var(--r-sm);font-family:'Sora',sans-serif;font-size:13px;color:var(--text);background:var(--surface2);outline:none;"><option value="">Selecione o empilhador...</option></select></div><div class="mfield-row" style="display:none"><div class="mfield"><label>Matrícula</label><input id="modal-mat" type="text" readonly></div><div class="mfield"><label>Nome</label><input id="modal-emp" type="text" readonly></div></div><div class="mfield"><label>Quantidade de Paletes <span class="modal-required">*</span></label><input id="modal-paletes" type="number" min="1" step="1" placeholder="Número de paletes a armazenar"></div><div class="mfield-row"><div class="mfield"><label>Nível mínimo <span class="modal-required">*</span></label><input id="modal-nivel-min" type="number" min="2" max="7" step="1" value="2" placeholder="Ex: 5"></div><div class="mfield"><label>Nível máximo <span class="modal-required">*</span></label><input id="modal-nivel-max" type="number" min="2" max="7" step="1" value="7" placeholder="Ex: 6"></div></div></div><div class="modal-footer"><button class="modal-btn-cancel" onclick="closeModal()">Cancelar</button><button class="modal-btn-confirm" onclick="confirmModal()">Salvar</button></div></div></div>
+<div class="modal-overlay" id="arm-modal"><div class="modal-box"><div class="modal-header"><div class="modal-header-ico">📦</div><div><div class="modal-header-title">Registrar Armazenagem</div><div class="modal-header-sub">Confirme os dados da via cega</div></div></div><div class="modal-prod-bar"><div><div class="modal-prod-cod" id="modal-cod">—</div><div class="modal-prod-name" id="modal-name">—</div></div><div class="modal-prod-tag" id="modal-linha">—</div></div><div class="modal-body"><div class="mfield"><label>Via Cega <span class="modal-required">*</span></label><div class="combobox" id="modal-via-combobox"><div class="combobox-input"><input type="text" id="modal-via" placeholder="Digite ou selecione a via cega..." autocomplete="off" oninput="filtrarViasModal()" onfocus="abrirDropdownViaModal()"><button class="combobox-btn" type="button" onclick="toggleDropdownViaModal()">▼</button></div></div><div id="modal-via-warn" style="font-size:10px;color:var(--fc-red);margin-top:3px;display:none;">⚠️ Via não encontrada na planilha</div></div><div class="mfield"><label>Fornecedor <span class="modal-required">*</span></label><input id="modal-forn" type="text" placeholder="Nome do fornecedor..." readonly></div><div class="mfield"><label>Empilhador <span class="modal-required">*</span></label><select id="modal-emp-select" onchange="onEmpilhadorChange()" style="width:100%;padding:11px 14px;border:1.5px solid var(--border2);border-radius:var(--r-sm);font-family:'Sora',sans-serif;font-size:13px;color:var(--text);background:var(--surface2);outline:none;"><option value="">Selecione o empilhador...</option></select></div><div class="mfield-row" style="display:none"><div class="mfield"><label>Matrícula</label><input id="modal-mat" type="text" readonly></div><div class="mfield"><label>Nome</label><input id="modal-emp" type="text" readonly></div></div><div id="modal-uma-stats" style="display:none;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:12px;font-weight:600;display:none;gap:14px;flex-wrap:wrap;align-items:center;"><span style="color:var(--text);">📦 Total: <strong id="modal-uma-total">—</strong></span><span style="color:var(--fc-green);">✅ <strong id="modal-uma-end">—</strong> endereçadas</span><span style="color:var(--amber);">⏳ <strong id="modal-uma-pend">—</strong> pendentes</span></div><div class="mfield"><label>Quantidade de Paletes <span class="modal-required">*</span></label><input id="modal-paletes" type="number" min="1" step="1" placeholder="Número de paletes a armazenar"></div><div class="mfield-row"><div class="mfield"><label>Nível mínimo <span class="modal-required">*</span></label><input id="modal-nivel-min" type="number" min="2" max="7" step="1" value="2" placeholder="Ex: 5"></div><div class="mfield"><label>Nível máximo <span class="modal-required">*</span></label><input id="modal-nivel-max" type="number" min="2" max="7" step="1" value="7" placeholder="Ex: 6"></div></div></div><div class="modal-footer"><button class="modal-btn-cancel" onclick="closeModal()">Cancelar</button><button class="modal-btn-confirm" onclick="confirmModal()">Salvar</button></div></div></div>
 
 <!-- MODAL DE CADASTRO DE FORNECEDOR -->
 <div class="modal-overlay" id="modal-cadastro-forn"><div class="modal-box"><div class="modal-header"><div class="modal-header-ico">➕</div><div><div class="modal-header-title">Cadastrar Fornecedor</div><div class="modal-header-sub">Preencha os dados do novo fornecedor</div></div></div><div class="modal-body"><div class="mfield"><label>Nome do Fornecedor <span class="modal-required">*</span></label><input id="modal-cadastro-forn-nome" type="text" placeholder="Ex: NOVO FORNECEDOR LTDA"></div><div class="mfield"><label>Linha <span class="modal-required">*</span></label><select id="modal-cadastro-forn-linha-select"></select></div></div><div class="modal-footer"><button class="modal-btn-cancel" onclick="fecharModalCadastro()">Cancelar</button><button class="modal-btn-confirm" onclick="salvarFornecedorManual()">Cadastrar</button></div></div></div>
